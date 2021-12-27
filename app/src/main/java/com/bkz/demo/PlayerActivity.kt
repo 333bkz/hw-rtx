@@ -16,7 +16,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bkz.control.*
 import com.bkz.demo.chat.ChatClient
 import com.bkz.demo.chat.LiveChatListener
-import com.bkz.demo.chat.UserInfo
+import com.bkz.demo.chat.MessageTarget
 import com.bkz.hwrtc.*
 import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
@@ -65,14 +65,12 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         )
         viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
         initChat()
-        client = ChatClient(
-            UserInfo(
-                guestId = userId,
-                nickName = userName,
-                cellphone = "18565731244",
-            ),
-            roomId
-        ).apply {
+        client = ChatClient(MessageTarget(
+            roomNumber = roomId,
+            guestId = userId,
+            nickName = userName,
+            cellphone = "18565731244",
+        )).apply {
             chatListener = this@PlayerActivity
             connect()
         }

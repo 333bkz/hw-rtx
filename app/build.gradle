@@ -36,8 +36,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
-    api project(":library-hw-rtc")
-    api project(":library-video-control")
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation project(":library-hw-rtc")
+    implementation project(":library-video-control")
     implementation('io.socket:socket.io-client:2.0.1') {
         exclude group: 'org.json', module: 'json'
     }

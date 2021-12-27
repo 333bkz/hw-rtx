@@ -1,6 +1,6 @@
 package com.bkz.demo.chat
 
-enum class EventType(val desc: String) {
+enum class EventType(val command: String) {
     CONNECT("connect"),
     DISCONNECT("disconnect"),
     MESSAGE("message"),
@@ -18,4 +18,8 @@ enum class MessageType {
     USER_SEND_MSG,//老师消息
     USER_SEND_ANNOUNCEMENT,//公告
     USER_TOP_IMG,//置顶图片
+}
+
+enum class EmitType(val command: String) {
+    MSG_PUB("msgpub"),
 }

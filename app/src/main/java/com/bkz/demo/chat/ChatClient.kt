@@ -6,8 +6,7 @@ import io.socket.client.Socket
 import io.socket.emitter.Emitter
 
 class ChatClient(
-    private val user: UserInfo,
-    private val roomId: String,
+    private val target: MessageTarget,
 ) {
 
     private var socket: Socket? = null
@@ -17,7 +16,7 @@ class ChatClient(
         url: String = "wss://su.sxmaps.com:7074/socket.io",
     ) {
         val opts = IO.Options()
-        opts.query = user.toOptsQuery()
+        opts.query = target.toOptsQuery()
         opts.transports = arrayOf("websocket", "xhr-polling", "jsonp-polling")
         runCatching {
             socket = IO.socket(url, opts)
@@ -27,44 +26,51 @@ class ChatClient(
     fun connect() {
         socket?.run {
             connect()
-            on(EventType.CONNECT.desc, onConnect)
-            on(EventType.DISCONNECT.desc, onDisConnect)
-            on(EventType.MESSAGE.desc, onMessage)
-            on(EventType.ANNOUNCEMENT.desc, onAnnouncement)
+            on(EventType.CONNECT.command, onConnect)
+            on(EventType.DISCONNECT.command, onDisConnect)
+            on(EventType.MESSAGE.command, onMessage)
+            on(EventType.ANNOUNCEMENT.command, onAnnouncement)
         }
     }
 
-    fun disconnect(){
+    fun disconnect() {
         socket?.disconnect()
     }
 
     fun sendMessage(msg: String) {
-        socket?.emit(MessageType.GUEST_SEND_MSG.name, user.toArrays())
+        socket?.emit(
+            EmitType.MSG_PUB.command,
+            Message(
+                messageType = MessageType.GUEST_SEND_MSG.name,
+                data = target,
+                message = msg
+            )
+        )
     }
 
     private var onConnect = Emitter.Listener {
 
     }
 
-    var onDisConnect = Emitter.Listener {
+    private var onDisConnect = Emitter.Listener {
 
     }
 
-    var onMessage = Emitter.Listener {
+    private var onMessage = Emitter.Listener {
 
     }
 
-    var onAnnouncement = Emitter.Listener {
+    private var onAnnouncement = Emitter.Listener {
 
     }
 
-    private fun UserInfo.toOptsQuery(): String {
+    private fun MessageTarget.toOptsQuery(): String {
         return "guestId=$guestId&nickName=$nickName&cellphone=$cellphone" +
                 "&avatarUrl=$avatarUrl&remarkName=$remarkName" +
-                "&roomNumber=$roomId&timeStamp=${SystemClock.currentThreadTimeMillis()}"
+                "&roomNumber=$roomNumber&timeStamp=${SystemClock.currentThreadTimeMillis()}"
     }
 
-    private fun UserInfo.toArrays(append: List<String>? = null): Array<String> {
+    private fun MessageTarget.toArrays(append: List<String>? = null): Array<String> {
         return mutableListOf<String>().apply {
             add("guestId:$guestId")
             append?.let {
