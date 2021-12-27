@@ -34,6 +34,10 @@ class ChatClient(
         }
     }
 
+    fun disconnect(){
+        socket?.disconnect()
+    }
+
     fun sendMessage(msg: String) {
         socket?.emit(MessageType.GUEST_SEND_MSG.name, user.toArrays())
     }

@@ -15,13 +15,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bkz.control.*
 import com.bkz.demo.chat.ChatClient
+import com.bkz.demo.chat.LiveChatListener
 import com.bkz.demo.chat.UserInfo
 import com.bkz.hwrtc.*
 import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-class PlayerActivity : AppCompatActivity(), IEventHandler {
+class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     private var viewModel: LiveViewModel? = null
     private var mediaController: MediaController? = null
@@ -71,7 +72,10 @@ class PlayerActivity : AppCompatActivity(), IEventHandler {
                 cellphone = "18565731244",
             ),
             roomId
-        )
+        ).apply {
+            chatListener = this@PlayerActivity
+            connect()
+        }
     }
 
     private fun initChat() {
@@ -108,6 +112,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler {
         super.onDestroy()
         unregisterEventHandler()
         rtc.engine.leaveRoom()
+        client?.disconnect()
     }
 
     override fun onWarning(isError: Boolean, code: Int, msg: String) {
