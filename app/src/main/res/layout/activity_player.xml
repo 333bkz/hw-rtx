@@ -21,8 +21,12 @@
             android:layout_height="wrap_content"
             android:padding="15dp"
             android:text="聊天室"
-            android:textColor="@color/black"
             android:textSize="20sp" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </LinearLayout>
 
     <com.bkz.control.FloatDragLayout

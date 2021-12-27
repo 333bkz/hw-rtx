@@ -11,7 +11,11 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
+import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bkz.control.*
+import com.bkz.demo.chat.ChatClient
+import com.bkz.demo.chat.UserInfo
 import com.bkz.hwrtc.*
 import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
@@ -19,10 +23,12 @@ import kotlinx.android.synthetic.main.activity_player.*
 
 class PlayerActivity : AppCompatActivity(), IEventHandler {
 
+    private var viewModel: LiveViewModel? = null
     private var mediaController: MediaController? = null
     private val controller: Controller by lazy { Controller(this) }
     private var userSurfaceView: SurfaceView? = null
     private var screenShareSurfaceView: SurfaceView? = null
+    private var client: ChatClient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -45,14 +51,36 @@ class PlayerActivity : AppCompatActivity(), IEventHandler {
                 }).also { it.isLive = true }
         }
         registerEventHandler()
+        val roomId = "61c950238eec9669ed9d546a"
+        val userId = "123456789"
+        val userName = "llb2"
         mediaController?.isLoading = true
         rtc.engine.joinRoom(
-            "61c950238eec9669ed9d546a",
+            roomId,
             Constants.appId,
             Constants.key,
             "123456789",
             "llb2"
         )
+        viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
+        initChat()
+        client = ChatClient(
+            UserInfo(
+                guestId = userId,
+                nickName = userName,
+                cellphone = "18565731244",
+            ),
+            roomId
+        )
+    }
+
+    private fun initChat() {
+        view_pager?.apply {
+            this.adapter = object : FragmentStateAdapter(this@PlayerActivity) {
+                override fun getItemCount() = 1
+                override fun createFragment(position: Int) = ChatFragment.newInstance()
+            }
+        }
     }
 
     override fun onBackPressed() {
