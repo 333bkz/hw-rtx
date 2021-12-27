@@ -1,0 +1,4 @@
+include ':app'
+include ':library-hw-rtc'
+include ':library-video-control'
+include ':library-arr'
