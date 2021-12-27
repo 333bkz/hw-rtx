@@ -11,6 +11,7 @@ class SocketClient(
 ) {
 
     private var socket: Socket? = null
+    var chatListener: LiveChatListener? = null
 
     fun create(
         url: String = "wss://su.sxmaps.com:7074/socket.io",
@@ -37,7 +38,7 @@ class SocketClient(
         socket?.emit(MessageType.GUEST_SEND_MSG.name, user.toArrays())
     }
 
-    var onConnect = Emitter.Listener {
+    private var onConnect = Emitter.Listener {
 
     }
 
