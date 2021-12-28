@@ -14,8 +14,6 @@ class ChatClient private constructor() {
         val instance: ChatClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             ChatClient()
         }
-
-        private const val URL = "wss://su.sxmaps.com:7074/im/guest"
     }
 
     private var socket: Socket? = null
@@ -24,14 +22,14 @@ class ChatClient private constructor() {
     var target: MessageTarget? = null
         private set
 
-    fun create(target: MessageTarget) {
+    fun create(url: String, target: MessageTarget) {
         this.target = target
         val opts = IO.Options()
         opts.timeout = 10_000
         opts.query = target.toQuery()
         opts.transports = arrayOf(WebSocket.NAME)
         runCatching {
-            socket = IO.socket(URL, opts)
+            socket = IO.socket(url, opts)
         }
     }
 
@@ -73,9 +71,9 @@ class ChatClient private constructor() {
     }
 
     private var onMessage = Emitter.Listener {
-        if(!it.isNullOrEmpty()){
+        if (!it.isNullOrEmpty()) {
             val msg = it[0]
-            if(msg is JSONObject) {
+            if (msg is JSONObject) {
                 onMessage(msg)
             }
         }
@@ -85,7 +83,7 @@ class ChatClient private constructor() {
         "onAnnouncement: ${it[0]}".log()
     }
 
-    private  fun onMessage(message:JSONObject){
+    private fun onMessage(message: JSONObject) {
         message["messageType"].toString().log()
         target?.guestSession = message["sessionTo"].toString()
     }

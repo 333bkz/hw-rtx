@@ -59,7 +59,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         initChat()
         ChatClient.instance.apply {
             chatListener = this@PlayerActivity
-            create(MessageTarget(roomId, userId, userName, cellphone))
+            create(Constants.url, MessageTarget(roomId, userId, userName, cellphone))
             connect()
         }
     }
