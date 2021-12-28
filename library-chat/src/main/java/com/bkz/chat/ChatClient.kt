@@ -84,8 +84,15 @@ class ChatClient private constructor() {
     }
 
     private fun onMessage(message: JSONObject) {
-        message["messageType"].toString().log()
-        target?.guestSession = message["sessionTo"].toString()
+        val type = message["messageType"].toString()
+        type.log()
+        when (type) {
+            MessageType.GUEST_JOIN_ROOM.name -> {
+                target?.guestSession = message["sessionTo"].toString()
+                target?.guestSession?.log()
+            }
+        }
+
     }
 
     fun clear() {

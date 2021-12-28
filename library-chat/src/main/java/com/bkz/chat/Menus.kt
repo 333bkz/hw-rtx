@@ -11,6 +11,7 @@ enum class EventType(val command: String) {
 enum class MessageType {
     LIVE_START_EVENT,//开播
     LIVE_END_EVENT,//停播
+    GUEST_JOIN_ROOM,//加入
     GUEST_FORBID_CHAT,//学员被禁言
     GUEST_RESUME_CHAT,//学员解除禁言
     GUEST_BLACK_LIST,//学员被拉黑
