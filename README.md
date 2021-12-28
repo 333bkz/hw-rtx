@@ -1,1 +1,3 @@
-# hw-rtc  and video-controller
+# hw-rtc
+# video-controller
+# socket io
