@@ -1,4 +1,4 @@
-package com.bkz.demo.chat
+package com.bkz.chat
 
 interface LiveChatListener {
     fun onMessage(model: ChatModel)

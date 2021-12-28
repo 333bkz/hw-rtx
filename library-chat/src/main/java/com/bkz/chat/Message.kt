@@ -1,4 +1,4 @@
-package com.bkz.demo.chat
+package com.bkz.chat
 
 data class Message(
     val messageType: String,
@@ -15,4 +15,14 @@ data class MessageTarget(
     val remarkName: String = "",
     var guestSession: String? = null,
     val msgId: String? = null,
-)
+) {
+    fun toQuery(): String {
+        return "guestId=$guestId" +
+                "&nickName=$nickName" +
+                "&cellphone=$cellphone" +
+                "&avatarUrl=" +
+                "&remarkName=" +
+                "&roomNumber=$roomNumber" +
+                "&timeStamp=${System.currentTimeMillis()}"
+    }
+}

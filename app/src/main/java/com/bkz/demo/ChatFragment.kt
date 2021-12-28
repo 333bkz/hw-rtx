@@ -26,6 +26,8 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(LiveViewModel::class.java)
+        viewModel?.chatData?.observe(viewLifecycleOwner) {
 
+        }
     }
 }

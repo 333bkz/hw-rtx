@@ -36,10 +36,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
-    implementation 'com.google.code.gson:gson:2.8.9'
+//    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
     implementation project(":library-hw-rtc")
     implementation project(":library-video-control")
-    implementation('io.socket:socket.io-client:2.0.1') {
-        exclude group: 'org.json', module: 'json'
-    }
+    implementation project(":library-chat")
 }

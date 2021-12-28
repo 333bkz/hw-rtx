@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+}
+
+android {
+    compileSdk 31
+    defaultConfig {
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation 'org.java-websocket:Java-WebSocket:1.5.2'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation('io.socket:engine.io-client:1.0.1') {
+        exclude group: 'org.json', module: 'json'
+    }
+}

@@ -11,8 +11,8 @@ import com.huawei.rtc.utils.HRTCEnums.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-fun String.log() {
-    Log.i("-HW-RTC-", this)
+internal fun String.log(tag: String = "-HW-RTC-") {
+    Log.i(tag, this)
 }
 
 fun videoEncParam() = listOf(
@@ -83,7 +83,7 @@ fun HRTCEngine.joinRoom(
     appId: String,
     key: String,
     userId: String,
-    userName: String
+    userName: String,
 ) = joinRoom(HRTCJoinParam().apply {
     this.userId = userId
     this.userName = userName
@@ -94,10 +94,7 @@ fun HRTCEngine.joinRoom(
     this.autoSubscribeAudio = true
     this.autoSubscribeVideo = true
     this.ctime = System.currentTimeMillis() / 1000 + 60 * 60 //有效时间为1小时，单位是秒
-    val content: String = (appId + "+"
-            + roomId + "+"
-            + userId + "+"
-            + this.ctime)
+    val content = "$appId+$roomId+$userId+${this.ctime}"
     this.authorization = hmacSha(key, content)
 }) == HRTCConstants.HRTC_SUCCESS
 

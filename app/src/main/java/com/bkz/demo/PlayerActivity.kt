@@ -13,10 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.bkz.chat.*
 import com.bkz.control.*
-import com.bkz.demo.chat.ChatClient
-import com.bkz.demo.chat.LiveChatListener
-import com.bkz.demo.chat.MessageTarget
 import com.bkz.hwrtc.*
 import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
@@ -29,7 +27,6 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     private val controller: Controller by lazy { Controller(this) }
     private var userSurfaceView: SurfaceView? = null
     private var screenShareSurfaceView: SurfaceView? = null
-    private var client: ChatClient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -52,26 +49,17 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
                 }).also { it.isLive = true }
         }
         registerEventHandler()
-        val roomId = "61c950238eec9669ed9d546a"
-        val userId = "123456789"
-        val userName = "llb2"
+        val roomId = "61ca742f8eec9669ed9d6cf0"
+        val userId = "6633"
+        val userName = "llb2222"
+        val cellphone = "18565731244"
         mediaController?.isLoading = true
-        rtc.engine.joinRoom(
-            roomId,
-            Constants.appId,
-            Constants.key,
-            "123456789",
-            "llb2"
-        )
+        //rtc.engine.joinRoom(roomId, Constants.appId, Constants.key, userId, userName)
         viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
         initChat()
-        client = ChatClient(MessageTarget(
-            roomNumber = roomId,
-            guestId = userId,
-            nickName = userName,
-            cellphone = "18565731244",
-        )).apply {
+        ChatClient.instance.apply {
             chatListener = this@PlayerActivity
+            create(MessageTarget(roomId, userId, userName, cellphone))
             connect()
         }
     }
@@ -110,7 +98,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         super.onDestroy()
         unregisterEventHandler()
         rtc.engine.leaveRoom()
-        client?.disconnect()
+        ChatClient.instance.clear()
     }
 
     override fun onWarning(isError: Boolean, code: Int, msg: String) {
@@ -207,5 +195,13 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         }
         val param = FrameLayout.LayoutParams(-1, -1)
         addView(view, index, param)
+    }
+
+    override fun onMessage(model: ChatModel) {
+        viewModel?.chatData?.value = model
+    }
+
+    override fun onAnnouncement(model: ChatModel) {
+        viewModel?.chatData?.value = model
     }
 }

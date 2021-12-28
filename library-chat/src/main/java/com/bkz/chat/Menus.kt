@@ -1,8 +1,9 @@
-package com.bkz.demo.chat
+package com.bkz.chat
 
 enum class EventType(val command: String) {
     CONNECT("connect"),
     DISCONNECT("disconnect"),
+    CONNECT_ERROR("connect_error"),
     MESSAGE("message"),
     ANNOUNCEMENT("showmsg"),
 }
