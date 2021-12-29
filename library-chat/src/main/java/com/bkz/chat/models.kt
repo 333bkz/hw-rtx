@@ -21,7 +21,7 @@ interface LiveChatListener {
 }
 
 data class ChatModel(
-    var type: Int = 0,
+    var type: ChatType = ChatType.CHAT,
     var guestId: String? = null,
     var createTime: Int? = null,
 

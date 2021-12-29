@@ -22,14 +22,14 @@ internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEN
     return when (type) {
         ChatType.CHAT, ChatType.JOIN, ChatType.IMAGE -> {
             gson.fromJson(optString(MESSAGE), ChatModel::class.java).also {
+                it.type = type
                 it.guestId = optString(node)
-                it.type = type.ordinal
                 it.createTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
             }
         }
-        ChatType.ANNOUNCEMENT -> ChatModel(type = type.ordinal, content = optString(MESSAGE))
+        ChatType.ANNOUNCEMENT -> ChatModel(type = type, content = optString(MESSAGE))
         ChatType.TOP_IMAGE -> ChatModel(
-            type = type.ordinal,
+            type = type,
             content = optJSONObject(MESSAGE)?.optString(IMAGE_URL)
         )
     }

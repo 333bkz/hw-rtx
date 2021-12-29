@@ -3,6 +3,7 @@ package com.bkz.demo.ui
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -223,7 +224,24 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     }
 
     override fun onMessageNotify(model: ChatModel) {
-        viewModel?.chatData?.postValue(model)
+        Log.i("onMessageNotify", model.toString())
+        when (model.type) {
+            ChatType.CHAT -> {
+                viewModel?.chatData?.postValue(model)
+            }
+            ChatType.JOIN -> {
+
+            }
+            ChatType.IMAGE -> {
+
+            }
+            ChatType.ANNOUNCEMENT -> {
+
+            }
+            ChatType.TOP_IMAGE -> {
+
+            }
+        }
     }
 
     override fun onGuestCountNotify(count: Int) {
