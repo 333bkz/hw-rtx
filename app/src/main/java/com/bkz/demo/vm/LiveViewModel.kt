@@ -1,4 +1,4 @@
-package com.bkz.demo
+package com.bkz.demo.vm
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

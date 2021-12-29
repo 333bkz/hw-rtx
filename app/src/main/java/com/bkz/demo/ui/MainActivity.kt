@@ -1,4 +1,4 @@
-package com.bkz.demo
+package com.bkz.demo.ui
 
 import android.Manifest
 import android.content.Intent
@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.bkz.control.onClick
+import com.bkz.demo.R
 
 class MainActivity : AppCompatActivity() {
 

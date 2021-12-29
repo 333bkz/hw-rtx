@@ -3,9 +3,13 @@ package com.bkz.control
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 
 fun View.gone() {
@@ -131,4 +135,25 @@ fun Activity.hideNavKey() {
 
 fun Activity.showNavKey(systemUiVisibility: Int) {
     window?.decorView?.systemUiVisibility = systemUiVisibility
+}
+
+fun View?.isShouldHideInput(event: MotionEvent): Boolean {
+    if (this is EditText) {
+        val rect = Rect()
+        getGlobalVisibleRect(rect)
+        return !rect.contains(event.rawX.toInt(), event.rawY.toInt())
+    }
+    return false
+}
+
+fun Activity.hideSoftKeyboard() {
+    val view = currentFocus
+    view?.let {
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(
+            view.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
 }

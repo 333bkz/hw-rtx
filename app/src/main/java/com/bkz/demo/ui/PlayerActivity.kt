@@ -1,24 +1,27 @@
-package com.bkz.demo
+package com.bkz.demo.ui
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.SurfaceView
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.bkz.chat.*
 import com.bkz.control.*
+import com.bkz.demo.Constants
+import com.bkz.demo.R
+import com.bkz.demo.vm.LiveViewModel
 import com.bkz.hwrtc.*
 import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
+
+val target = Target("61cbc5d98eec9669ed9d99ec", "6633", "llb2222", "18565731244")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -49,17 +52,11 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
                 }).also { it.isLive = true }
         }
         registerEventHandler()
-        val roomId = "61ca742f8eec9669ed9d6cf0"
-        val userId = "6633"
-        val userName = "llb2222"
-        val cellphone = "18565731244"
-        mediaController?.isLoading = true
-        //rtc.engine.joinRoom(roomId, Constants.appId, Constants.key, userId, userName)
         viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
         initChat()
-        ChatClient.instance.apply {
-            chatListener = this@PlayerActivity
-            create(Constants.url, MessageTarget(roomId, userId, userName, cellphone))
+        chatClient.apply {
+            setLiveChatListener(this@PlayerActivity)
+            create(Constants.url, target)
             connect()
         }
     }
@@ -97,8 +94,8 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     override fun onDestroy() {
         super.onDestroy()
         unregisterEventHandler()
-        rtc.engine.leaveRoom()
-        ChatClient.instance.clear()
+        leaveRoom()
+        chatClient.clear()
     }
 
     override fun onWarning(isError: Boolean, code: Int, msg: String) {
@@ -197,11 +194,48 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         addView(view, index, param)
     }
 
+    private fun leaveRoom() {
+        rtc.engine.leaveRoom()
+    }
+
+    override fun onLiveStart() {
+        runOnUiThread {
+            mediaController?.isLoading = true
+        }
+        rtc.engine.joinRoom(
+            target.roomNumber,
+            Constants.appId,
+            Constants.key,
+            target.guestId,
+            target.nickName,
+        )
+    }
+
+    override fun onLiveEnd() {
+        runOnUiThread {
+            Toast.makeText(this, "直播结束", Toast.LENGTH_SHORT).show()
+        }
+        leaveRoom()
+    }
+
     override fun onMessage(model: ChatModel) {
-        viewModel?.chatData?.value = model
+        viewModel?.chatData?.postValue(model)
     }
 
     override fun onAnnouncement(model: ChatModel) {
-        viewModel?.chatData?.value = model
+        viewModel?.chatData?.postValue(model)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.action == MotionEvent.ACTION_DOWN) {
+            if (currentFocus.isShouldHideInput(ev)) {
+                hideSoftKeyboard()
+                currentFocus?.clearFocus()
+            }
+        }
+        runCatching {
+            return super.dispatchTouchEvent(ev)
+        }
+        return false
     }
 }
