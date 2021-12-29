@@ -7,13 +7,13 @@ import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import io.socket.engineio.client.transports.WebSocket
 import org.json.JSONObject
+import java.util.concurrent.ThreadLocalRandom
 
 val chatClient: ChatClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
     ChatClientImpl()
 }
 
 private class ChatClientImpl : ChatClient {
-
     private var socket: Socket? = null
     private var target: Target? = null
     private var listener: LiveChatListener? = null
@@ -73,7 +73,7 @@ private class ChatClientImpl : ChatClient {
     }
 
     private fun Target.sendCommand(type: MessageType, content: String? = null) {
-        "type:$type content:$content socket:${socket?.connected()}".log("-Chat-sendCommand")
+        "type: $type content: $content socket: ${socket?.connected()}".log("-Chat-sendCommand")
         if (socket?.connected() != true) {
             return
         }
@@ -87,7 +87,7 @@ private class ChatClientImpl : ChatClient {
             ON_MSG -> Command(
                 messageType = type.command,
                 data = this.also {
-                    it.msgId = (Math.random() * 100000).toString()
+                    it.msgId = ThreadLocalRandom.current().nextInt(100_000, 100_0000).toString()
                 },
                 message = content
             )
@@ -112,7 +112,7 @@ private class ChatClientImpl : ChatClient {
         json.toString().log("-Chat-$type")
         when (type) {
             ON_GUEST_COUNT.command -> {
-
+                listener?.onGuestCount(msg.toInt())
             }
             ON_JOIN_ROOM.command -> {
                 if (sendTo == target?.guestId) {
@@ -125,10 +125,10 @@ private class ChatClientImpl : ChatClient {
                     target?.sendCommand(ON_GUEST_COUNT)
                 }
             }
-            ON_EXIT_ROOM.command -> {}
-            ON_FORBID_CHAT.command -> {}
-            ON_RESUME_CHAT.command -> {}
-            ON_KICK_OUT.command -> {}
+            ON_EXIT_ROOM.command -> target?.sendCommand(ON_GUEST_COUNT)
+            ON_FORBID_CHAT.command -> listener?.onForbidChat()
+            ON_RESUME_CHAT.command -> listener?.onResumeChat()
+            ON_KICK_OUT.command -> listener?.onKickOut()
             ON_MSG.command -> {
                 listener?.onMessage(gson.fromJson(msg, ChatModel::class.java).also {
                     it.guestId = sendTo

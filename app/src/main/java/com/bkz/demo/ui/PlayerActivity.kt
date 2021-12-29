@@ -222,8 +222,17 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         viewModel?.chatData?.postValue(model)
     }
 
-    override fun onAnnouncement(model: ChatModel) {
-        viewModel?.chatData?.postValue(model)
+    override fun onGuestCount(count: Int) {
+
+    }
+
+    override fun onForbidChat() {
+    }
+
+    override fun onResumeChat() {
+    }
+
+    override fun onKickOut() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

@@ -4,7 +4,10 @@ interface LiveChatListener {
     fun onLiveStart()
     fun onLiveEnd()
     fun onMessage(model: ChatModel)
-    fun onAnnouncement(model: ChatModel)
+    fun onGuestCount(count: Int)
+    fun onForbidChat()
+    fun onResumeChat()
+    fun onKickOut()
 }
 
 data class ChatModel(
