@@ -21,7 +21,7 @@ import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61cbc5d98eec9669ed9d99ec", "6633", "llb2222", "18565731244")
+val target = Target("61cc2a0e8eec9669ed9d9fec", "6633", "llb2222", "18565731244")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -198,41 +198,49 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         rtc.engine.leaveRoom()
     }
 
-    override fun onLiveStart() {
-        runOnUiThread {
-            mediaController?.isLoading = true
-        }
-        rtc.engine.joinRoom(
-            target.roomNumber,
-            Constants.appId,
-            Constants.key,
-            target.guestId,
-            target.nickName,
-        )
+    override fun onActiveStateNotify(isActive: Boolean) {
+
     }
 
-    override fun onLiveEnd() {
-        runOnUiThread {
-            Toast.makeText(this, "直播结束", Toast.LENGTH_SHORT).show()
+    override fun onLiveActiveStateNotify(isActive: Boolean) {
+        if (isActive) {
+            runOnUiThread {
+                mediaController?.isLoading = true
+            }
+            rtc.engine.joinRoom(
+                target.roomNumber,
+                Constants.appId,
+                Constants.key,
+                target.guestId,
+                target.nickName,
+            )
+        } else {
+            runOnUiThread {
+                Toast.makeText(this, "直播结束", Toast.LENGTH_SHORT).show()
+            }
+            leaveRoom()
         }
-        leaveRoom()
     }
 
-    override fun onMessage(model: ChatModel) {
+    override fun onMessageNotify(model: ChatModel) {
         viewModel?.chatData?.postValue(model)
     }
 
-    override fun onGuestCount(count: Int) {
-
+    override fun onGuestCountNotify(count: Int) {
+        runOnUiThread {
+            tv_count.text = "聊天室： $count"
+        }
     }
 
-    override fun onForbidChat() {
+    override fun onForbidChatNotify(isForbid: Boolean) {
     }
 
-    override fun onResumeChat() {
-    }
-
-    override fun onKickOut() {
+    override fun onKickOutNotify() {
+        leaveRoom()
+        chatClient.clear()
+        runOnUiThread {
+            Toast.makeText(this, "被踢出", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

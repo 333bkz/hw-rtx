@@ -1,11 +1,28 @@
 package com.bkz.chat
 
+internal const val MESSAGE_TYPE = "messageType"
+internal const val MESSAGE = "message"
+internal const val SEND_TO = "sendTo"
+internal const val SEND_FROM = "sendFrom"
+internal const val SESSION_TO = "sessionTo"
+internal const val CREATE_TIME = "createTime"
+internal const val EPOCH_SECOND = "epochSecond"
+internal const val IMAGE_URL = "imageUrl"
+
+enum class ChatType{
+    CHAT,
+    JOIN,
+    IMAGE,
+    ANNOUNCEMENT,
+    TOP_IMAGE,
+}
+
 internal enum class EventType(val command: String) {
     CONNECT("connect"),
     DISCONNECT("disconnect"),
-    CONNECT_ERROR("connect_error"),
+//    CONNECT_ERROR("connect_error"),
     MESSAGE("message"),
-    ANNOUNCEMENT("showmsg"),
+//    ANNOUNCEMENT("showmsg"),
 }
 
 internal enum class MessageType(val command: String) {

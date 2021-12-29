@@ -1,18 +1,31 @@
 package com.bkz.chat
 
 interface LiveChatListener {
-    fun onLiveStart()
-    fun onLiveEnd()
-    fun onMessage(model: ChatModel)
-    fun onGuestCount(count: Int)
-    fun onForbidChat()
-    fun onResumeChat()
-    fun onKickOut()
+    /**聊天服务状态*/
+    fun onActiveStateNotify(isActive: Boolean)
+
+    /**直播状态*/
+    fun onLiveActiveStateNotify(isActive: Boolean)
+
+    /**消息*/
+    fun onMessageNotify(model: ChatModel)
+
+    /**观看人数*/
+    fun onGuestCountNotify(count: Int)
+
+    /**禁言状态*/
+    fun onForbidChatNotify(isForbid: Boolean)
+
+    /**被踢*/
+    fun onKickOutNotify()
 }
 
 data class ChatModel(
-    val content: String? = null,
+    var type: Int = 0,
     var guestId: String? = null,
+    var createTime: Int? = null,
+
+    val content: String? = null,
     val avatarUrl: String? = null,
     val nickName: String? = null,
     val remarkName: String? = null,

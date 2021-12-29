@@ -18,14 +18,14 @@ private class ChatClientImpl : ChatClient {
     private var target: Target? = null
     private var listener: LiveChatListener? = null
     private val gson: Gson by lazy { Gson() }
-    private val onConnect = Emitter.Listener { "onConnect".log() }
-    private val onConnectError = Emitter.Listener { "onConnectError".log() }
-    private val onDisConnect = Emitter.Listener { "onDisConnect".log() }
+    private val onConnect = Emitter.Listener { listener?.onActiveStateNotify(true) }
+    private val onDisConnect = Emitter.Listener { listener?.onActiveStateNotify(false) }
     private val onMessage = Emitter.Listener {
         if (!it.isNullOrEmpty()) {
-            val msg = it[0]
-            if (msg is JSONObject) {
-                onMessage(msg)
+            with(it[0]) {
+                if (this is JSONObject) {
+                    onMessage(this)
+                }
             }
         }
     }
@@ -40,17 +40,15 @@ private class ChatClientImpl : ChatClient {
         opts.timeout = 10_000
         opts.query = target.toQuery()
         opts.transports = arrayOf(WebSocket.NAME)
-        runCatching {
-            socket = IO.socket(url, opts)
-        }
+        runCatching { socket = IO.socket(url, opts) }
     }
 
     override fun connect() {
         socket?.run {
             on(EventType.CONNECT.command, onConnect)
-            on(EventType.CONNECT_ERROR.command, onConnectError)
             on(EventType.DISCONNECT.command, onDisConnect)
             on(EventType.MESSAGE.command, onMessage)
+            //on(EventType.CONNECT_ERROR.command, onConnectError)
             //on(EventType.ANNOUNCEMENT.command, onAnnouncement)
             connect()
         }
@@ -105,42 +103,38 @@ private class ChatClientImpl : ChatClient {
         }
     }
 
+
     private fun onMessage(json: JSONObject) {
-        val type = json["messageType"].toString()
-        val msg = json["message"].toString()
-        val sendTo = json["sendTo"].toString()
-        json.toString().log("-Chat-$type")
+        val type = json.optString(MESSAGE_TYPE)
+        json.toString().log("-Chat- $type")
         when (type) {
-            ON_GUEST_COUNT.command -> {
-                listener?.onGuestCount(msg.toInt())
-            }
+            ON_GUEST_COUNT.command -> listener?.onGuestCountNotify(json.optInt(MESSAGE))
             ON_JOIN_ROOM.command -> {
-                if (sendTo == target?.guestId) {
-                    target?.guestSession = json["sessionTo"].toString()
-                    val state = json["state"].toString()
-                    if (state == "1") {
-                        listener?.onLiveStart()
-                    }
+                if (json.optString(SEND_TO) == target?.guestId) {
+                    target?.guestSession = json.optString(SESSION_TO)
                 } else {
-                    target?.sendCommand(ON_GUEST_COUNT)
+                    listener?.onMessageNotify(json.chatModel(gson, ChatType.JOIN))
                 }
             }
             ON_EXIT_ROOM.command -> target?.sendCommand(ON_GUEST_COUNT)
-            ON_FORBID_CHAT.command -> listener?.onForbidChat()
-            ON_RESUME_CHAT.command -> listener?.onResumeChat()
-            ON_KICK_OUT.command -> listener?.onKickOut()
-            ON_MSG.command -> {
-                listener?.onMessage(gson.fromJson(msg, ChatModel::class.java).also {
-                    it.guestId = sendTo
-                    it.content?.trim('\n')
-                })
-            }
+            ON_FORBID_CHAT.command -> listener?.onForbidChatNotify(true)
+            ON_RESUME_CHAT.command -> listener?.onForbidChatNotify(false)
+            ON_KICK_OUT.command -> listener?.onKickOutNotify()
+            ON_MSG.command -> listener?.onMessageNotify(
+                json.chatModel(gson, ChatType.CHAT, SEND_FROM)
+            )
             ON_ASSISTANT_MSG.command -> {}
-            ON_ASSISTANT_IMG.command -> {}
-            ON_ANNOUNCEMENT.command -> {}
-            ON_TOP_IMG.command -> {}
-            ON_LIVE_START.command -> listener?.onLiveStart()
-            ON_LIVE_END.command -> listener?.onLiveEnd()
+            ON_ASSISTANT_IMG.command -> listener?.onMessageNotify(
+                json.chatModel(gson, ChatType.IMAGE, SEND_FROM)
+            )
+            ON_ANNOUNCEMENT.command -> listener?.onMessageNotify(
+                json.chatModel(gson, ChatType.ANNOUNCEMENT, SEND_FROM)
+            )
+            ON_TOP_IMG.command -> listener?.onMessageNotify(
+                json.chatModel(gson, ChatType.TOP_IMAGE, SEND_FROM)
+            )
+            ON_LIVE_START.command -> listener?.onLiveActiveStateNotify(true)
+            ON_LIVE_END.command -> listener?.onLiveActiveStateNotify(false)
             ON_REMARK_NAME.command -> {}
             else -> {}
         }

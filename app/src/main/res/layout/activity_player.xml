@@ -17,6 +17,7 @@
             android:layout_height="260dp" />
 
         <TextView
+            android:id="@+id/tv_count"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp"
