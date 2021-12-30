@@ -10,4 +10,11 @@ class LiveViewModel : ViewModel() {
         MutableLiveData()
     }
 
+    val socketState:MutableLiveData<Boolean> by lazy {
+        MutableLiveData()
+    }
+
+    val forbidState:MutableLiveData<Boolean> by lazy {
+        MutableLiveData()
+    }
 }

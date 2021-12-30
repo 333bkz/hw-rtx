@@ -2,34 +2,45 @@ package com.bkz.chat
 
 interface LiveChatListener {
     /**聊天服务状态*/
-    fun onActiveStateNotify(isActive: Boolean)
+    fun onSocketStateNotify(isActive: Boolean)
 
     /**直播状态*/
-    fun onLiveActiveStateNotify(isActive: Boolean)
-
-    /**消息*/
-    fun onMessageNotify(model: ChatModel)
-
-    /**观看人数*/
-    fun onGuestCountNotify(count: Int)
+    fun onLiveStateNotify(isActive: Boolean)
 
     /**禁言状态*/
     fun onForbidChatNotify(isForbid: Boolean)
 
     /**被踢*/
     fun onKickOutNotify()
+
+    /**观看人数*/
+    fun onGuestCountNotify(count: Int)
+
+    /**消息*/
+    fun onMessageNotify(model: ChatModel)
 }
 
 data class ChatModel(
+    /**消息类型*/
     var type: ChatType = ChatType.CHAT,
+    /**用户ID*/
     var guestId: String? = null,
+    /**创建时间*/
     var createTime: Int? = null,
-
-    val content: String? = null,
+    /**CHAT=消息内容 ｜ IMAGE=图片 ｜ JOIN=用户进入消息 ｜ ANNOUNCEMENT=公告*/
+    var content: String? = null,
+    /**TOP_IMAGE=置顶图片*/
+    val imageUrl: String? = null,
+    /**头像*/
     val avatarUrl: String? = null,
+    /**名字*/
     val nickName: String? = null,
+    /**备注*/
     val remarkName: String? = null,
+    /**老师*/
     val isAnchor: Int = 0,
+    /**ANNOUNCEMENT=用户数量*/
+    val userJoinNum: Int? = null,
 )
 
 data class Target(

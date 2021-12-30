@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bkz.chat.ChatModel
+import com.bkz.chat.ChatType
 import com.bkz.chat.chatClient
 import com.bkz.control.onClick
 import com.bkz.demo.R
@@ -30,7 +31,8 @@ class ChatFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
         return inflater.inflate(R.layout.fragment_chat, container, false)
@@ -39,10 +41,6 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(LiveViewModel::class.java)
-        viewModel?.chatData?.observe(viewLifecycleOwner) {
-            items.add(it)
-            adapter.notifyItemInserted(items.size)
-        }
         items.clear()
         adapter.items = items
         adapter.register(ChatItemViewBinder())
@@ -53,6 +51,38 @@ class ChatFragment : Fragment() {
                 chatClient.sendMessage(content)
             }
             et_content.setText("")
+        }
+        observe()
+    }
+
+    private fun observe() {
+        viewModel?.chatData?.observe(viewLifecycleOwner) {
+            when (it.type) {
+                ChatType.CHAT -> {
+                    items.add(it)
+                    adapter.notifyItemInserted(items.size)
+                }
+                ChatType.JOIN -> {
+
+                }
+                ChatType.IMAGE -> {
+
+                }
+                ChatType.ANNOUNCEMENT -> {
+
+                }
+                ChatType.TOP_IMAGE -> {
+
+                }
+            }
+        }
+        viewModel?.forbidState?.observe(viewLifecycleOwner) {
+            tv_send.isEnabled = it
+            et_content.isEnabled = it
+        }
+        viewModel?.socketState?.observe(viewLifecycleOwner) {
+            tv_send.isEnabled = it
+            et_content.isEnabled = it
         }
     }
 

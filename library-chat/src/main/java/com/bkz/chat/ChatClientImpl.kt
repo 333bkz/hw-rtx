@@ -18,8 +18,8 @@ private class ChatClientImpl : ChatClient {
     private var target: Target? = null
     private var listener: LiveChatListener? = null
     private val gson: Gson by lazy { Gson() }
-    private val onConnect = Emitter.Listener { listener?.onActiveStateNotify(true) }
-    private val onDisConnect = Emitter.Listener { listener?.onActiveStateNotify(false) }
+    private val onConnect = Emitter.Listener { listener?.onSocketStateNotify(true) }
+    private val onDisConnect = Emitter.Listener { listener?.onSocketStateNotify(false) }
     private val onMessage = Emitter.Listener {
         if (!it.isNullOrEmpty()) {
             with(it[0]) {
@@ -103,7 +103,6 @@ private class ChatClientImpl : ChatClient {
         }
     }
 
-
     private fun onMessage(json: JSONObject) {
         val type = json.optString(MESSAGE_TYPE)
         json.toString().log("-Chat- $type")
@@ -119,11 +118,13 @@ private class ChatClientImpl : ChatClient {
             ON_EXIT_ROOM.command -> target?.sendCommand(ON_GUEST_COUNT)
             ON_FORBID_CHAT.command -> listener?.onForbidChatNotify(true)
             ON_RESUME_CHAT.command -> listener?.onForbidChatNotify(false)
-            ON_KICK_OUT.command -> listener?.onKickOutNotify()
+            ON_KICK_OUT.command -> {
+                listener?.onKickOutNotify()
+                clear()
+            }
             ON_MSG.command -> listener?.onMessageNotify(
                 json.chatModel(gson, ChatType.CHAT, SEND_FROM)
             )
-            ON_ASSISTANT_MSG.command -> {}
             ON_ASSISTANT_IMG.command -> listener?.onMessageNotify(
                 json.chatModel(gson, ChatType.IMAGE, SEND_FROM)
             )
@@ -133,9 +134,8 @@ private class ChatClientImpl : ChatClient {
             ON_TOP_IMG.command -> listener?.onMessageNotify(
                 json.chatModel(gson, ChatType.TOP_IMAGE, SEND_FROM)
             )
-            ON_LIVE_START.command -> listener?.onLiveActiveStateNotify(true)
-            ON_LIVE_END.command -> listener?.onLiveActiveStateNotify(false)
-            ON_REMARK_NAME.command -> {}
+            ON_LIVE_START.command -> listener?.onLiveStateNotify(true)
+            ON_LIVE_END.command -> listener?.onLiveStateNotify(false)
             else -> {}
         }
     }

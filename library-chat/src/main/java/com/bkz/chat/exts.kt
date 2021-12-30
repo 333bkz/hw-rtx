@@ -20,17 +20,21 @@ internal fun Target.toQuery(): String {
 
 internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEND_TO): ChatModel {
     return when (type) {
-        ChatType.CHAT, ChatType.JOIN, ChatType.IMAGE -> {
+        ChatType.CHAT, ChatType.JOIN, ChatType.IMAGE, ChatType.TOP_IMAGE -> {
             gson.fromJson(optString(MESSAGE), ChatModel::class.java).also {
                 it.type = type
                 it.guestId = optString(node)
                 it.createTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
+                if (type == ChatType.IMAGE) {
+                    it.content = it.content?.replace("<img src=", "")
+                    it.content = it.content?.replace(" alt=\"img\" />", "")
+                }
             }
         }
-        ChatType.ANNOUNCEMENT -> ChatModel(type = type, content = optString(MESSAGE))
-        ChatType.TOP_IMAGE -> ChatModel(
+        ChatType.ANNOUNCEMENT -> ChatModel(
             type = type,
-            content = optJSONObject(MESSAGE)?.optString(IMAGE_URL)
+            content = optString(MESSAGE),
+            userJoinNum = optInt(USER_JOIN_NUM).run { if (this == 0) null else this }
         )
     }
 }

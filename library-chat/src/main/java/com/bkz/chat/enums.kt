@@ -7,7 +7,7 @@ internal const val SEND_FROM = "sendFrom"
 internal const val SESSION_TO = "sessionTo"
 internal const val CREATE_TIME = "createTime"
 internal const val EPOCH_SECOND = "epochSecond"
-internal const val IMAGE_URL = "imageUrl"
+internal const val USER_JOIN_NUM = "userJoinNum"
 
 enum class ChatType{
     CHAT,
@@ -20,7 +20,6 @@ enum class ChatType{
 internal enum class EventType(val command: String) {
     CONNECT("connect"),
     DISCONNECT("disconnect"),
-//    CONNECT_ERROR("connect_error"),
     MESSAGE("message"),
 //    ANNOUNCEMENT("showmsg"),
 }
@@ -53,9 +52,6 @@ internal enum class MessageType(val command: String) {
     /**接收到消息*/
     ON_MSG("GUEST_SEND_MSG"),
 
-    /**助教消息*/
-    ON_ASSISTANT_MSG("USER_SEND_MSG"),
-
     /**助教图片消息*/
     ON_ASSISTANT_IMG("USER_SEND_IMG"),
 
@@ -65,6 +61,6 @@ internal enum class MessageType(val command: String) {
     /**助教置顶图片*/
     ON_TOP_IMG("USER_TOP_IMG"),
 
-    /**备注名修改*/
+    /**备注名修改-只作为命令*/
     ON_REMARK_NAME("USER_REMARK_NAME");
 }

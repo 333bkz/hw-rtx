@@ -22,7 +22,7 @@ import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61cc2a0e8eec9669ed9d9fec", "6633", "llb2222", "18565731244")
+val target = Target("61cd0b06be88845109ddc2c7", "111111111", "xxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -103,7 +103,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     }
 
     override fun onAuthorizationExpired() {
-//        rtc.engine.renewAuthorization()
+        //rtc.engine.renewAuthorization()
     }
 
     override fun onJoinRoomSuccess(isRejoin: Boolean) {
@@ -199,11 +199,11 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         rtc.engine.leaveRoom()
     }
 
-    override fun onActiveStateNotify(isActive: Boolean) {
-
+    override fun onSocketStateNotify(isActive: Boolean) {
+        viewModel?.socketState?.postValue(isActive)
     }
 
-    override fun onLiveActiveStateNotify(isActive: Boolean) {
+    override fun onLiveStateNotify(isActive: Boolean) {
         if (isActive) {
             runOnUiThread {
                 mediaController?.isLoading = true
@@ -224,40 +224,24 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     }
 
     override fun onMessageNotify(model: ChatModel) {
-        Log.i("onMessageNotify", model.toString())
-        when (model.type) {
-            ChatType.CHAT -> {
-                viewModel?.chatData?.postValue(model)
-            }
-            ChatType.JOIN -> {
-
-            }
-            ChatType.IMAGE -> {
-
-            }
-            ChatType.ANNOUNCEMENT -> {
-
-            }
-            ChatType.TOP_IMAGE -> {
-
-            }
-        }
+        Log.i("-Chat- onMessageNotify", model.toString())
+        viewModel?.chatData?.postValue(model)
     }
 
     override fun onGuestCountNotify(count: Int) {
         runOnUiThread {
-            tv_count.text = "聊天室： $count"
+            tv_count.text = "聊天室-$count"
         }
     }
 
     override fun onForbidChatNotify(isForbid: Boolean) {
+        viewModel?.forbidState?.postValue(isForbid)
     }
 
     override fun onKickOutNotify() {
         leaveRoom()
-        chatClient.clear()
         runOnUiThread {
-            Toast.makeText(this, "被踢出", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "您已经被踢出", Toast.LENGTH_SHORT).show()
         }
     }
 
