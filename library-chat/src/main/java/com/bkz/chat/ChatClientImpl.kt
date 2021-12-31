@@ -52,6 +52,7 @@ private class ChatClientImpl : ChatClient {
         opts.timeout = 10_000
         opts.query = target.toQuery()
         opts.transports = arrayOf(WebSocket.NAME)
+        opts.extraHeaders = mapOf(Pair("user-agent", listOf(System.getProperty("http.agent"))))
         runCatching { socket = IO.socket(url, opts) }
     }
 
