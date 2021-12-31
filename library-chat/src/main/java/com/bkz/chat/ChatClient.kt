@@ -9,5 +9,9 @@ interface ChatClient {
     fun sendMessage(content: String)
     fun editRemakeName(content: String)
     fun clear()
+
+    /**
+     * JOIN + CHAT + IMAGE
+     */
     fun getChatFlow(): Flow<List<ChatModel>>
 }

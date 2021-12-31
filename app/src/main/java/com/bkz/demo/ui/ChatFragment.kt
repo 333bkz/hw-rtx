@@ -1,10 +1,13 @@
 package com.bkz.demo.ui
 
+import android.app.Activity
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bkz.chat.ChatModel
 import com.bkz.chat.chatClient
-import com.bkz.control.onClick
 import com.bkz.demo.R
 import com.bkz.demo.adapter.ChatAdapter
 import com.bkz.demo.vm.LiveViewModel
@@ -44,23 +46,27 @@ class ChatFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(LiveViewModel::class.java)
         recycler_view.init(adapter)
         recycler_view.overScroll()
-        tv_send.onClick(1000) {
-            val content = et_content.text.toString().trim()
-            if (content.isNotEmpty()) {
-                chatClient.sendMessage(content)
+        et_content.apply {
+            setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    val input = v.text.toString().trim()
+                    if (input.isNotEmpty()) {
+                        chatClient.sendMessage(input)
+                        et_content.setText("")
+                        hideSoftKeyboard(activity)
+                    }
+                }
+                true
             }
-            et_content.setText("")
         }
         observe()
     }
 
     private fun observe() {
         viewModel?.forbidState?.observe(viewLifecycleOwner) {
-            tv_send.isEnabled = it
             et_content.isEnabled = it
         }
         viewModel?.socketState?.observe(viewLifecycleOwner) {
-            tv_send.isEnabled = it
             et_content.isEnabled = it
         }
         viewModel?.viewModelScope?.launch {
@@ -113,6 +119,20 @@ class ChatFragment : Fragment() {
         val manager: RecyclerView.LayoutManager? = recycler_view.layoutManager
         if (manager is LinearLayoutManager) {
             manager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
+        }
+    }
+
+    private fun hideSoftKeyboard(activity: Activity?) {
+        activity?.let { act ->
+            val view = act.currentFocus
+            view?.let {
+                val inputMethodManager =
+                    act.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(
+                    view.windowToken,
+                    InputMethodManager.HIDE_NOT_ALWAYS
+                )
+            }
         }
     }
 }

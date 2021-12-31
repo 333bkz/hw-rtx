@@ -29,6 +29,9 @@ internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEN
                     it.content = it.content?.replace("<img src=", "")
                     it.content = it.content?.replace(" alt=\"img\" />", "")
                     it.isAnchor = 1
+                } else {
+                    it.content = it.content?.removePrefix("\n")
+                    it.content = it.content?.removeSuffix("\n")
                 }
             }
         }
@@ -37,5 +40,21 @@ internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEN
             content = optString(MESSAGE),
             userJoinNum = optInt(USER_JOIN_NUM).run { if (this == 0) null else this }
         )
+    }
+}
+
+internal fun String.removePrefix(target: String): String {
+    return if (startsWith(target)) {
+        substring(target.length).removePrefix(target)
+    } else {
+        this
+    }
+}
+
+internal fun String.removeSuffix(target: String): String {
+    return if (endsWith(target)) {
+        substring(0, length - target.length).removeSuffix(target)
+    } else {
+        this
     }
 }
