@@ -30,17 +30,17 @@ data class ChatModel(
     /**CHAT=消息内容 ｜ IMAGE=图片 ｜ JOIN=用户进入消息 ｜ ANNOUNCEMENT=公告*/
     var content: String? = null,
     /**TOP_IMAGE=置顶图片*/
-    val imageUrl: String? = null,
+    var imageUrl: String? = null,
     /**头像*/
-    val avatarUrl: String? = null,
+    var avatarUrl: String? = null,
     /**名字*/
-    val nickName: String? = null,
+    var nickName: String? = null,
     /**备注*/
-    val remarkName: String? = null,
+    var remarkName: String? = null,
     /**老师*/
-    val isAnchor: Int = 0,
+    var isAnchor: Int = 0,
     /**ANNOUNCEMENT=用户数量*/
-    val userJoinNum: Int? = null,
+    var userJoinNum: Int? = null,
 )
 
 data class Target(

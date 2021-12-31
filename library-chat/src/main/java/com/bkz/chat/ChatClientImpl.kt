@@ -71,6 +71,7 @@ private class ChatClientImpl : ChatClient {
         socket = null
         target = null
         listener = null
+        state.value = emptyList()
         joinCount = 0
         chat.clear()
         handler.removeCallbacksAndMessages(null)

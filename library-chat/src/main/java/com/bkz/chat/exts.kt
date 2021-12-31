@@ -28,6 +28,7 @@ internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEN
                 if (type == ChatType.IMAGE) {
                     it.content = it.content?.replace("<img src=", "")
                     it.content = it.content?.replace(" alt=\"img\" />", "")
+                    it.isAnchor = 1
                 }
             }
         }
