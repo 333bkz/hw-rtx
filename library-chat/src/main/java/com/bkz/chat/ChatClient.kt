@@ -11,7 +11,7 @@ interface ChatClient {
     fun clear()
 
     /**
-     * JOIN + CHAT + IMAGE
+     * JOIN + EXIT + CHAT + IMAGE
      */
-    fun getChatFlow(): Flow<List<ChatModel>>
+    fun getChatsFlow(): Flow<List<ChatModel>>
 }

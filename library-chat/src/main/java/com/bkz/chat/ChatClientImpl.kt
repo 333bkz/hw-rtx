@@ -37,8 +37,9 @@ private class ChatClientImpl : ChatClient {
         }
     }
     private var joinCount = 0
-    private val chat = mutableListOf<ChatModel>()
-    private val state = MutableStateFlow<List<ChatModel>>(emptyList())
+    private var lastSend = 0L
+    private val chats = mutableListOf<ChatModel>()
+    private val chatState = MutableStateFlow<List<ChatModel>>(emptyList())
 
     override fun setLiveChatListener(listener: LiveChatListener) {
         this.listener = listener
@@ -59,8 +60,6 @@ private class ChatClientImpl : ChatClient {
             on(EventType.CONNECT.command, onConnect)
             on(EventType.DISCONNECT.command, onDisConnect)
             on(EventType.MESSAGE.command, onMessage)
-            //on(EventType.CONNECT_ERROR.command, onConnectError)
-            //on(EventType.ANNOUNCEMENT.command, onAnnouncement)
             connect()
         }
     }
@@ -71,9 +70,9 @@ private class ChatClientImpl : ChatClient {
         socket = null
         target = null
         listener = null
-        state.value = emptyList()
         joinCount = 0
-        chat.clear()
+        chats.clear()
+        chatState.value = emptyList()
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -133,11 +132,17 @@ private class ChatClientImpl : ChatClient {
             ON_JOIN_ROOM.command -> {
                 if (json.optString(SEND_TO) == target?.guestId) {
                     target?.guestSession = json.optString(SESSION_TO)
-                } else {
-                    json.chatModel(gson, ChatType.JOIN).send()
                 }
+                json.chatModel(gson, ChatType.JOIN, SEND_TO).send()
             }
-            ON_EXIT_ROOM.command -> target?.sendCommand(ON_GUEST_COUNT)
+            ON_EXIT_ROOM.command -> {
+                val cur = System.currentTimeMillis()
+                if (cur - lastSend > 500) {
+                    lastSend = cur
+                    target?.sendCommand(ON_GUEST_COUNT)
+                }
+                json.chatModel(gson, ChatType.EXIT).send()
+            }
             ON_FORBID_CHAT.command -> execute {
                 listener?.onForbidChatNotify(true)
             }
@@ -148,19 +153,19 @@ private class ChatClientImpl : ChatClient {
                 listener?.onKickOutNotify()
             }
             ON_MSG.command -> {
-                json.chatModel(gson, ChatType.CHAT, SEND_FROM).send()
+                json.chatModel(gson, ChatType.CHAT).send()
             }
             ON_ASSISTANT_IMG.command -> {
-                json.chatModel(gson, ChatType.IMAGE, SEND_FROM).send()
+                json.chatModel(gson, ChatType.IMAGE).send()
             }
             ON_ANNOUNCEMENT.command -> {
-                val model = json.chatModel(gson, ChatType.ANNOUNCEMENT, SEND_FROM)
+                val model = json.chatModel(gson, ChatType.ANNOUNCEMENT)
                 execute {
                     listener?.onAnnouncementNotify(model)
                 }
             }
             ON_TOP_IMG.command -> {
-                val model = json.chatModel(gson, ChatType.TOP_IMAGE, SEND_FROM)
+                val model = json.chatModel(gson, ChatType.TOP_IMAGE)
                 execute {
                     listener?.onAnnouncementNotify(model)
                 }
@@ -180,14 +185,15 @@ private class ChatClientImpl : ChatClient {
     }
 
     private fun ChatModel.send() {
-        synchronized(chat) {
-            chat.add(this)
-            if (chat.size > 200) {
-                chat.removeAt(0)
+        synchronized(chats) {
+            chats.add(this)
+            if (chats.size > 200) {
+                chats.removeAt(0)
             }
-            state.value = ArrayList(chat)
+            chatState.value = ArrayList(chats)
         }
     }
 
-    override fun getChatFlow(): Flow<List<ChatModel>> = state.buffer(0, BufferOverflow.DROP_OLDEST)
+    override fun getChatsFlow(): Flow<List<ChatModel>> =
+        chatState.buffer(0, BufferOverflow.DROP_OLDEST)
 }

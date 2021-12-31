@@ -70,7 +70,7 @@ class ChatFragment : Fragment() {
             et_content.isEnabled = it
         }
         viewModel?.viewModelScope?.launch {
-            chatClient.getChatFlow().collect {
+            chatClient.getChatsFlow().collect {
                 items.clear()
                 items.addAll(it)
                 adapter.notifyDataSetChanged()

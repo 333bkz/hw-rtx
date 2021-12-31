@@ -12,6 +12,7 @@ internal const val USER_JOIN_NUM = "userJoinNum"
 enum class ChatType{
     CHAT,
     JOIN,
+    EXIT,
     IMAGE,
     ANNOUNCEMENT,
     TOP_IMAGE,

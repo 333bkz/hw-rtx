@@ -18,20 +18,26 @@ internal fun Target.toQuery(): String {
             "&timeStamp=${System.currentTimeMillis()}"
 }
 
-internal fun JSONObject.chatModel(gson: Gson, type: ChatType, node: String = SEND_TO): ChatModel {
+internal fun JSONObject.chatModel(
+    gson: Gson, type: ChatType, guestIdNode: String = SEND_FROM,
+): ChatModel {
     return when (type) {
-        ChatType.CHAT, ChatType.JOIN, ChatType.IMAGE, ChatType.TOP_IMAGE -> {
+        ChatType.CHAT, ChatType.JOIN, ChatType.EXIT, ChatType.IMAGE, ChatType.TOP_IMAGE -> {
             gson.fromJson(optString(MESSAGE), ChatModel::class.java).also {
                 it.type = type
-                it.guestId = optString(node)
+                it.guestId = optString(guestIdNode)
                 it.createTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
-                if (type == ChatType.IMAGE) {
-                    it.content = it.content?.replace("<img src=", "")
-                    it.content = it.content?.replace(" alt=\"img\" />", "")
-                    it.isAnchor = 1
-                } else {
-                    it.content = it.content?.removePrefix("\n")
-                    it.content = it.content?.removeSuffix("\n")
+                when (type) {
+                    ChatType.IMAGE -> {
+                        it.content = it.content?.replace("<img src=", "")
+                        it.content = it.content?.replace(" alt=\"img\" />", "")
+                        it.isAnchor = 1
+                    }
+                    ChatType.CHAT -> {
+                        it.content = it.content?.removePrefix("\n")
+                        it.content = it.content?.removeSuffix("\n")
+                    }
+                    else -> {}
                 }
             }
         }

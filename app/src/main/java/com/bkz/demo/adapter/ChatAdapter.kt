@@ -36,7 +36,7 @@ class ChatAdapter(
                     holder.tv_content.text =
                         String.format("%s: %s", remarkName ?: nickName, content)
                 }
-                ChatType.JOIN -> {
+                ChatType.JOIN, ChatType.EXIT -> {
                     holder.iv_content.gone()
                     holder.tv_content.text = content
                 }
