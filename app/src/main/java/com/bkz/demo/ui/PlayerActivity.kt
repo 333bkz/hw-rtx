@@ -3,7 +3,6 @@ package com.bkz.demo.ui
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -22,7 +21,7 @@ import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61cd0b06be88845109ddc2c7", "111111111", "xxx", "")
+val target = Target("61ce6fd072a5651940a0a44b", "11111", "xxxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -54,12 +53,12 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         }
         registerEventHandler()
         viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
-        initChat()
         chatClient.apply {
             setLiveChatListener(this@PlayerActivity)
             create(Constants.url, target)
             connect()
         }
+        initChat()
     }
 
     private fun initChat() {
@@ -205,9 +204,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onLiveStateNotify(isActive: Boolean) {
         if (isActive) {
-            runOnUiThread {
-                mediaController?.isLoading = true
-            }
+            mediaController?.isLoading = true
             rtc.engine.joinRoom(
                 target.roomNumber,
                 Constants.appId,
@@ -216,22 +213,17 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
                 target.nickName,
             )
         } else {
-            runOnUiThread {
-                Toast.makeText(this, "直播结束", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this, "直播结束", Toast.LENGTH_SHORT).show()
             leaveRoom()
         }
     }
 
-    override fun onMessageNotify(model: ChatModel) {
-        Log.i("-Chat- onMessageNotify", model.toString())
-        viewModel?.chatData?.postValue(model)
+    override fun onAnnouncementNotify(model: ChatModel) {
+        viewModel?.announcement?.value = model
     }
 
     override fun onGuestCountNotify(count: Int) {
-        runOnUiThread {
-            tv_count.text = "聊天室-$count"
-        }
+        tv_count.text = "聊天室-$count"
     }
 
     override fun onForbidChatNotify(isForbid: Boolean) {
@@ -240,9 +232,8 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onKickOutNotify() {
         leaveRoom()
-        runOnUiThread {
-            Toast.makeText(this, "您已经被踢出", Toast.LENGTH_SHORT).show()
-        }
+        chatClient.clear()
+        Toast.makeText(this, "您已经被踢出", Toast.LENGTH_SHORT).show()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

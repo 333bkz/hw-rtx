@@ -7,23 +7,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bkz.chat.ChatModel
-import com.bkz.chat.ChatType
 import com.bkz.chat.chatClient
 import com.bkz.control.onClick
 import com.bkz.demo.R
-import com.bkz.demo.adapter.ChatItemViewBinder
+import com.bkz.demo.adapter.ChatAdapter
 import com.bkz.demo.vm.LiveViewModel
-import com.drakeet.multitype.MultiTypeAdapter
 import kotlinx.android.synthetic.main.fragment_chat.*
+import kotlinx.coroutines.launch
+import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
+
 
 class ChatFragment : Fragment() {
-
     private var viewModel: LiveViewModel? = null
-    private val adapter = MultiTypeAdapter()
     private val items = ArrayList<ChatModel>()
+    private val adapter = ChatAdapter(items)
 
     companion object {
         @JvmStatic
@@ -41,10 +42,8 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(LiveViewModel::class.java)
-        items.clear()
-        adapter.items = items
-        adapter.register(ChatItemViewBinder())
         recycler_view.init(adapter)
+        recycler_view.overScroll()
         tv_send.onClick(1000) {
             val content = et_content.text.toString().trim()
             if (content.isNotEmpty()) {
@@ -56,26 +55,6 @@ class ChatFragment : Fragment() {
     }
 
     private fun observe() {
-        viewModel?.chatData?.observe(viewLifecycleOwner) {
-            when (it.type) {
-                ChatType.CHAT -> {
-                    items.add(it)
-                    adapter.notifyItemInserted(items.size)
-                }
-                ChatType.JOIN -> {
-
-                }
-                ChatType.IMAGE -> {
-
-                }
-                ChatType.ANNOUNCEMENT -> {
-
-                }
-                ChatType.TOP_IMAGE -> {
-
-                }
-            }
-        }
         viewModel?.forbidState?.observe(viewLifecycleOwner) {
             tv_send.isEnabled = it
             et_content.isEnabled = it
@@ -83,6 +62,14 @@ class ChatFragment : Fragment() {
         viewModel?.socketState?.observe(viewLifecycleOwner) {
             tv_send.isEnabled = it
             et_content.isEnabled = it
+        }
+        viewModel?.viewModelScope?.launch {
+            chatClient.getChatFlow().collect {
+                items.clear()
+                items.addAll(it)
+                adapter.notifyDataSetChanged()
+                scrollToLast()
+            }
         }
     }
 
@@ -113,5 +100,19 @@ class ChatFragment : Fragment() {
             }
         }
         return this
+    }
+
+    private fun RecyclerView.overScroll(orientation: Int = OverScrollDecoratorHelper.ORIENTATION_VERTICAL): RecyclerView {
+        this.layoutManager?.let {
+            OverScrollDecoratorHelper.setUpOverScroll(this, orientation)
+        }
+        return this
+    }
+
+    private fun scrollToLast() {
+        val manager: RecyclerView.LayoutManager? = recycler_view.layoutManager
+        if (manager is LinearLayoutManager) {
+            manager.scrollToPositionWithOffset(adapter.itemCount - 1, 0)
+        }
     }
 }

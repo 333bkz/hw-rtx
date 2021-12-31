@@ -16,8 +16,8 @@ interface LiveChatListener {
     /**观看人数*/
     fun onGuestCountNotify(count: Int)
 
-    /**消息*/
-    fun onMessageNotify(model: ChatModel)
+    /**公告*/
+    fun onAnnouncementNotify(model: ChatModel)
 }
 
 data class ChatModel(
