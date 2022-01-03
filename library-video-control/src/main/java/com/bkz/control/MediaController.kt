@@ -25,7 +25,7 @@ class MediaController(
     private val speedValue = listOf("1.0x", "1.25x", "1.5x", "2.0x")
     private val handler = Handler(Looper.getMainLooper())
     private val videoGesture: VideoGesture = VideoGesture(activity, this)
-    private var speedPop: SpeedPopUpWindow? = null
+    var speedPop: ListPopUpWindow<String>? = null
 
     init {
         systemUiVisibility = activity.window.decorView.systemUiVisibility
@@ -181,8 +181,8 @@ class MediaController(
     override fun onSpeed() {
         speedPop?.run {
             setData(speedValue)
-            setSpeedItemSelectedListener(object : OnSpeedItemSelectedListener {
-                override fun onSelected(value: String) {
+            setItemSelectedListener(object : OnItemSelectedListener<String> {
+                override fun onItemSelected(value: String) {
                     controller.speed.text = value
                     val speed = value.replace("x", "").toFloat()
                     listener?.onSpeed(speed)

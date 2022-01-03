@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bkz.chat.ChatModel
+import com.bkz.chat.ChatType
 import com.bkz.chat.chatClient
 import com.bkz.demo.R
 import com.bkz.demo.adapter.ChatAdapter
@@ -71,10 +72,14 @@ class ChatFragment : Fragment() {
         }
         viewModel?.viewModelScope?.launch {
             chatClient.getChatsFlow().collect {
-                items.clear()
-                items.addAll(it)
-                adapter.notifyDataSetChanged()
-                scrollToLast()
+                it.filter { item ->
+                    item.type == ChatType.CHAT || item.type == ChatType.IMAGE
+                }.let { chats ->
+                    items.clear()
+                    items.addAll(chats)
+                    adapter.notifyDataSetChanged()
+                    scrollToLast()
+                }
             }
         }
     }

@@ -14,23 +14,23 @@ class Controller @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr), SeekBar.OnSeekBarChangeListener {
 
-    val container: View
+    internal val container: View
     private val topContainer: View
     private val bottomContainer: View
     private val lock: ImageView
     private val centerPlay: ImageView
     private val back: ImageView
-    val title: TextView
+    internal val title: TextView
     private val switch: ImageView
-    val download: ImageView
+    internal val download: ImageView
     private val play: ImageView
     private val current: TextView
     private val progress: SeekBar
     private val duration: TextView
-    val speed: TextView
+    internal val speed: TextView
     private val full: ImageView
     private val loading: ENDownloadView
-    val seekBar: VideoSeekBar
+    internal val seekBar: VideoSeekBar
 
     init {
         with(inflate(context, R.layout.layout_video_control_view, this)) {
@@ -182,7 +182,7 @@ class Controller @JvmOverloads constructor(
             progress.max = value
         }
 
-    var itemListener: ItemClickListener? = null
+    internal var itemListener: ItemClickListener? = null
 
     override fun onProgressChanged(
         seekBar: SeekBar?, progress: Int, fromUser: Boolean,
@@ -199,7 +199,7 @@ class Controller @JvmOverloads constructor(
     }
 }
 
-interface ItemClickListener {
+internal interface ItemClickListener {
     fun onBack()
     fun onDownload()
     fun onSwitch()

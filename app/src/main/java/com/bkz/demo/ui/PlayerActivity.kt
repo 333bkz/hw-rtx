@@ -21,7 +21,7 @@ import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61ce6fd072a5651940a0a44b", "11111", "xxxx", "")
+val target = Target("61d28e4cc373ac6b56c5e85b", "11111", "xxxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 

@@ -140,7 +140,7 @@ private class ChatClientImpl : ChatClient {
                 val cur = System.currentTimeMillis()
                 if (cur - lastSend > 500) {
                     lastSend = cur
-                    target?.sendCommand(ON_GUEST_COUNT)
+                    //target?.sendCommand(ON_GUEST_COUNT)
                 }
                 json.chatModel(gson, ChatType.EXIT).send()
             }
