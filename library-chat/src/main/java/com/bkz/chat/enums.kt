@@ -8,6 +8,7 @@ internal const val SESSION_TO = "sessionTo"
 internal const val CREATE_TIME = "createTime"
 internal const val EPOCH_SECOND = "epochSecond"
 internal const val USER_JOIN_NUM = "userJoinNum"
+internal const val FROM_FLAG = "flag"
 
 enum class ChatType{
     CHAT,
@@ -63,5 +64,8 @@ internal enum class MessageType(val command: String) {
     ON_TOP_IMG("USER_TOP_IMG"),
 
     /**备注名修改-只作为命令*/
-    ON_REMARK_NAME("USER_REMARK_NAME");
+    ON_REMARK_NAME("USER_REMARK_NAME"),
+
+    /**点赞*/
+    ON_UPVOTE("UPVOTE");
 }

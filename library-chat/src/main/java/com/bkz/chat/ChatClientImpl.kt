@@ -8,10 +8,9 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import io.socket.engineio.client.transports.WebSocket
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import java.util.concurrent.ThreadLocalRandom
 
@@ -29,7 +28,7 @@ private class ChatClientImpl : ChatClient {
     private val onDisConnect = Emitter.Listener { listener?.onSocketStateNotify(false) }
     private val onMessage = Emitter.Listener {
         if (!it.isNullOrEmpty()) {
-            with(it[0]) {
+            it[0].run {
                 if (this is JSONObject) {
                     onMessage(this)
                 }
@@ -37,9 +36,9 @@ private class ChatClientImpl : ChatClient {
         }
     }
     private var joinCount = 0
-    private var lastSend = 0L
     private val chats = mutableListOf<ChatModel>()
     private val chatState = MutableStateFlow<List<ChatModel>>(emptyList())
+    private val upvoteState = MutableStateFlow(0)
 
     override fun setLiveChatListener(listener: LiveChatListener) {
         this.listener = listener
@@ -74,6 +73,7 @@ private class ChatClientImpl : ChatClient {
         joinCount = 0
         chats.clear()
         chatState.value = emptyList()
+        upvoteState.value = 0
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -83,6 +83,14 @@ private class ChatClientImpl : ChatClient {
 
     override fun editRemakeName(content: String) {
         target?.sendCommand(ON_REMARK_NAME, content)
+    }
+
+    override fun upvote() {
+        target?.sendCommand(ON_UPVOTE, "")
+    }
+
+    override fun queryGuestCount() {
+        target?.sendCommand(ON_GUEST_COUNT)
     }
 
     private fun Target.sendCommand(type: MessageType, content: String? = null) {
@@ -102,6 +110,10 @@ private class ChatClientImpl : ChatClient {
                     it.msgId = ThreadLocalRandom.current().nextInt(100_000, 100_0000).toString()
                 },
                 message = content
+            )
+            ON_UPVOTE -> Command(
+                messageType = type.command,
+                data = this,
             )
             ON_REMARK_NAME -> Command(
                 messageType = type.command,
@@ -135,14 +147,11 @@ private class ChatClientImpl : ChatClient {
                     target?.guestSession = json.optString(SESSION_TO)
                 }
                 json.chatModel(gson, ChatType.JOIN, SEND_TO).send()
+                queryGuestCount()
             }
             ON_EXIT_ROOM.command -> {
-                val cur = System.currentTimeMillis()
-                if (cur - lastSend > 500) {
-                    lastSend = cur
-                    //target?.sendCommand(ON_GUEST_COUNT)
-                }
                 json.chatModel(gson, ChatType.EXIT).send()
+                queryGuestCount()
             }
             ON_FORBID_CHAT.command -> execute {
                 listener?.onForbidChatNotify(true)
@@ -171,6 +180,9 @@ private class ChatClientImpl : ChatClient {
                     listener?.onAnnouncementNotify(model)
                 }
             }
+            ON_UPVOTE.command -> {
+                upvoteState.value = json.optInt(MESSAGE)
+            }
             ON_LIVE_START.command -> execute {
                 listener?.onLiveStateNotify(true)
             }
@@ -195,6 +207,7 @@ private class ChatClientImpl : ChatClient {
         }
     }
 
-    override fun getChatsFlow(): Flow<List<ChatModel>> =
-        chatState.buffer(0, BufferOverflow.DROP_OLDEST)
+    override fun getChatsFlow(): Flow<List<ChatModel>> = chatState.asStateFlow()
+
+    override fun getUpvoteFlow(): Flow<Int> = upvoteState.asStateFlow()
 }

@@ -27,11 +27,11 @@ internal fun JSONObject.chatModel(
                 it.type = type
                 it.guestId = optString(guestIdNode)
                 it.createTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
+                it.fromType = optInt(FROM_FLAG, 0)
                 when (type) {
                     ChatType.IMAGE -> {
                         it.content = it.content?.replace("<img src=", "")
                         it.content = it.content?.replace(" alt=\"img\" />", "")
-                        it.isAnchor = 1
                     }
                     ChatType.CHAT -> {
                         it.content = it.content?.removePrefix("\n")

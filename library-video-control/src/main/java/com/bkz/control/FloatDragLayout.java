@@ -208,4 +208,10 @@ public class FloatDragLayout extends FrameLayout {
         this.setX(point.x);
         this.setY(point.y);
     }
+
+    // 更新位置
+    public void updateLocationForMove(PointF point, long duration) {
+        point = fixedValue(point);
+        animatorMove(point,duration);
+    }
 }

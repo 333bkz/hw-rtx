@@ -2,7 +2,11 @@ package com.bkz.demo.ui
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.graphics.Point
+import android.graphics.PointF
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -21,7 +25,7 @@ import com.huawei.rtc.models.HRTCStatsInfo
 import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61d28e4cc373ac6b56c5e85b", "11111", "xxxx", "")
+val target = Target("61d5632dc373ac6b56c61792", "11111", "xxxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -30,6 +34,8 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     private val controller: Controller by lazy { Controller(this) }
     private var userSurfaceView: SurfaceView? = null
     private var screenShareSurfaceView: SurfaceView? = null
+    private val portrait = Point()
+    private val landscape = Point()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.setFlags(
@@ -42,6 +48,12 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         setContentView(R.layout.activity_player)
         screenContainer.apply {
             layoutParams = LinearLayout.LayoutParams(-1, screenWidth * 5 / 7)
+            val width = dp2px(120)
+            val height = dp2px(100)
+            portrait.x = screenWidth - width
+            portrait.y = statusBarHeight + screenWidth * 5 / 7
+            landscape.x = screenHeight - width
+            landscape.y = screenWidth - height
             addView(controller, FrameLayout.LayoutParams(-1, -1))
             mediaController = MediaController(
                 this@PlayerActivity, this, controller,
@@ -80,15 +92,17 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         super.onBackPressed()
     }
 
+    private val handler = Handler(Looper.getMainLooper());
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (newConfig.orientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-            || newConfig.orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        ) { //竖屏
-            dragContainer.updateLocation(0f, dp2px(48).toFloat())
-        } else {
-            dragContainer.updateLocation(0f, statusBarHeight.toFloat() + dp2px(48).toFloat())
-        }
+        handler.postDelayed({
+            if (newConfig.orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) { //竖屏
+                dragContainer.updateLocationForMove(PointF(portrait), 300)
+            } else {
+                dragContainer.updateLocationForMove(PointF(landscape), 300)
+            }
+        }, 600)
     }
 
     override fun onDestroy() {

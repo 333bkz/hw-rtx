@@ -3,6 +3,7 @@ package com.bkz.demo.ui
 import android.app.Activity
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,10 +17,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bkz.chat.ChatModel
 import com.bkz.chat.ChatType
 import com.bkz.chat.chatClient
+import com.bkz.control.onClick
 import com.bkz.demo.R
 import com.bkz.demo.adapter.ChatAdapter
 import com.bkz.demo.vm.LiveViewModel
 import kotlinx.android.synthetic.main.fragment_chat.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.launch
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 
@@ -60,6 +64,12 @@ class ChatFragment : Fragment() {
                 true
             }
         }
+        iv_upvote.onClick {
+//            for (i in 0..100) {
+//                chatClient.sendMessage("$i")
+//            }
+            chatClient.upvote()
+        }
         observe()
     }
 
@@ -71,16 +81,26 @@ class ChatFragment : Fragment() {
             et_content.isEnabled = it
         }
         viewModel?.viewModelScope?.launch {
-            chatClient.getChatsFlow().collect {
-                it.filter { item ->
-                    item.type == ChatType.CHAT || item.type == ChatType.IMAGE
-                }.let { chats ->
-                    items.clear()
-                    items.addAll(chats)
-                    adapter.notifyDataSetChanged()
-                    scrollToLast()
+            chatClient.getChatsFlow()
+                .buffer(0, BufferOverflow.DROP_OLDEST)
+                .collect {
+                    it.filter { item ->
+                        item.type == ChatType.CHAT || item.type == ChatType.IMAGE
+                    }.let { chats ->
+                        Log.e("-Chat-", "${chats.size}")
+                        items.clear()
+                        items.addAll(chats)
+                        adapter.notifyDataSetChanged()
+                        scrollToLast()
+                    }
                 }
-            }
+        }
+        viewModel?.viewModelScope?.launch {
+            chatClient.getUpvoteFlow()
+                .buffer(0, BufferOverflow.DROP_OLDEST)
+                .collect {
+                    Log.e("-Chat-", "$it")
+                }
         }
     }
 

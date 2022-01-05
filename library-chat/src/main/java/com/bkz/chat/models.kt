@@ -38,7 +38,7 @@ data class ChatModel(
     /**备注*/
     var remarkName: String? = null,
     /**老师*/
-    var isAnchor: Int = 0,
+    var fromType: Int = 0,
     /**ANNOUNCEMENT=用户数量*/
     var userJoinNum: Int? = null,
 )
