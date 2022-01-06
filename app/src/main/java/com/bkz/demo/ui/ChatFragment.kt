@@ -23,7 +23,9 @@ import com.bkz.demo.adapter.ChatAdapter
 import com.bkz.demo.vm.LiveViewModel
 import kotlinx.android.synthetic.main.fragment_chat.*
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 
@@ -83,16 +85,17 @@ class ChatFragment : Fragment() {
         viewModel?.viewModelScope?.launch {
             chatClient.getChatsFlow()
                 .buffer(0, BufferOverflow.DROP_OLDEST)
-                .collect {
+                .map {
+                    delay(200)
                     it.filter { item ->
                         item.type == ChatType.CHAT || item.type == ChatType.IMAGE
-                    }.let { chats ->
-                        Log.e("-Chat-", "${chats.size}")
-                        items.clear()
-                        items.addAll(chats)
-                        adapter.notifyDataSetChanged()
-                        scrollToLast()
                     }
+                }
+                .collect {
+                    items.clear()
+                    items.addAll(it)
+                    adapter.notifyDataSetChanged()
+                    scrollToLast()
                 }
         }
         viewModel?.viewModelScope?.launch {
