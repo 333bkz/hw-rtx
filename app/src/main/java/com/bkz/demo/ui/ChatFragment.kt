@@ -22,9 +22,11 @@ import com.bkz.demo.R
 import com.bkz.demo.adapter.ChatAdapter
 import com.bkz.demo.vm.LiveViewModel
 import kotlinx.android.synthetic.main.fragment_chat.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
@@ -91,6 +93,7 @@ class ChatFragment : Fragment() {
                         item.type == ChatType.CHAT || item.type == ChatType.IMAGE
                     }
                 }
+                .flowOn(Dispatchers.IO)
                 .collect {
                     items.clear()
                     items.addAll(it)
