@@ -21,14 +21,13 @@ import com.bkz.demo.Constants
 import com.bkz.demo.R
 import com.bkz.demo.vm.LiveViewModel
 import com.bkz.hwrtc.*
-import com.huawei.rtc.models.HRTCStatsInfo
-import com.huawei.rtc.utils.HRTCEnums
 import kotlinx.android.synthetic.main.activity_player.*
 
 val target = Target("61d5632dc373ac6b56c61792", "11111", "xxxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
+    private val handler = Handler(Looper.getMainLooper())
     private var viewModel: LiveViewModel? = null
     private var mediaController: MediaController? = null
     private val controller: Controller by lazy { Controller(this) }
@@ -57,7 +56,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
             addView(controller, FrameLayout.LayoutParams(-1, -1))
             mediaController = MediaController(
                 this@PlayerActivity, this, controller,
-                object : SimpleMediaControllerListener() {
+                object : MediaControllerListener {
                     override fun onSwitchPosition(isDragUser: Boolean) {
                         this@PlayerActivity.onSwitchPosition(isDragUser)
                     }
@@ -92,8 +91,6 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         super.onBackPressed()
     }
 
-    private val handler = Handler(Looper.getMainLooper());
-
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         handler.postDelayed({
@@ -112,23 +109,10 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         chatClient.clear()
     }
 
-    override fun onWarning(isError: Boolean, code: Int, msg: String) {
-    }
-
-    override fun onAuthorizationExpired() {
-        //rtc.engine.renewAuthorization()
-    }
-
     override fun onJoinRoomSuccess(isRejoin: Boolean) {
         runOnUiThread {
             mediaController?.isInit = true
         }
-    }
-
-    override fun onJoinRoomFailure(code: Int, msg: String) {
-    }
-
-    override fun onLeaveRoom(leaveReason: HRTCEnums.HRTCLeaveReason, statsInfo: HRTCStatsInfo) {
     }
 
     override fun onUserOnline(userId: String) {
@@ -212,10 +196,6 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         rtc.engine.leaveRoom()
     }
 
-    override fun onSocketStateNotify(isActive: Boolean) {
-        viewModel?.socketState?.postValue(isActive)
-    }
-
     override fun onLiveStateNotify(isActive: Boolean) {
         if (isActive) {
             mediaController?.isLoading = true
@@ -237,11 +217,6 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     }
 
     override fun onGuestCountNotify(count: Int) {
-        tv_count.text = "聊天室-$count"
-    }
-
-    override fun onForbidChatNotify(isForbid: Boolean) {
-        viewModel?.forbidState?.postValue(isForbid)
     }
 
     override fun onKickOutNotify() {

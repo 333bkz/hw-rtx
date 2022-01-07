@@ -2,22 +2,22 @@ package com.bkz.chat
 
 interface LiveChatListener {
     /**聊天服务状态*/
-    fun onSocketStateNotify(isActive: Boolean)
+    fun onSocketStateNotify(isActive: Boolean) {}
 
     /**直播状态*/
-    fun onLiveStateNotify(isActive: Boolean)
+    fun onLiveStateNotify(isActive: Boolean) {}
 
     /**禁言状态*/
-    fun onForbidChatNotify(isForbid: Boolean)
+    fun onForbidChatNotify(isForbid: Boolean) {}
 
     /**被踢*/
-    fun onKickOutNotify()
+    fun onKickOutNotify() {}
 
     /**观看人数*/
-    fun onGuestCountNotify(count: Int)
+    fun onGuestCountNotify(count: Int) {}
 
     /**公告*/
-    fun onAnnouncementNotify(model: ChatModel)
+    fun onAnnouncementNotify(model: ChatModel) {}
 }
 
 data class ChatModel(

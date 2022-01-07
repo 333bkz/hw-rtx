@@ -68,22 +68,30 @@ class ChatFragment : Fragment() {
                 true
             }
         }
-        iv_upvote.onClick {
+        flutterView.init(
+            80,
+            R.mipmap.icon_flutter_1,
+            R.mipmap.icon_flutter_2,
+            R.mipmap.icon_flutter_3,
+            R.mipmap.icon_flutter_4,
+            R.mipmap.icon_flutter_5,
+            R.mipmap.icon_flutter_6,
+            R.mipmap.icon_flutter_7,
+            R.mipmap.icon_flutter_8,
+            R.mipmap.icon_flutter_9,
+            R.mipmap.icon_flutter_10,
+        )
+        iv_upvote.onClick(50) {
 //            for (i in 0..100) {
 //                chatClient.sendMessage("$i")
 //            }
             chatClient.upvote()
+            flutterView.emit()
         }
         observe()
     }
 
     private fun observe() {
-        viewModel?.forbidState?.observe(viewLifecycleOwner) {
-            et_content.isEnabled = it
-        }
-        viewModel?.socketState?.observe(viewLifecycleOwner) {
-            et_content.isEnabled = it
-        }
         viewModel?.viewModelScope?.launch {
             chatClient.getChatsFlow()
                 .buffer(0, BufferOverflow.DROP_OLDEST)

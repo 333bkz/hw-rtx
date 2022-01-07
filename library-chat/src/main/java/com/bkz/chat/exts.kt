@@ -30,8 +30,8 @@ internal fun JSONObject.chatModel(
                 it.fromType = optInt(FROM_FLAG, 0)
                 when (type) {
                     ChatType.IMAGE -> {
-                        it.content = it.content?.replace("<img src=", "")
-                        it.content = it.content?.replace(" alt=\"img\" />", "")
+                        it.content = it.content?.replace("<img src=\"", "")
+                        it.content = it.content?.replace("\" alt=\"img\" />", "")
                     }
                     ChatType.CHAT -> {
                         it.content = it.content?.removePrefix("\n")
