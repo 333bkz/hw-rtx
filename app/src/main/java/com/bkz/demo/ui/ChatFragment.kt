@@ -1,9 +1,9 @@
 package com.bkz.demo.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,12 +26,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 
-
+@SuppressLint("NotifyDataSetChanged")
 class ChatFragment : Fragment() {
     private var viewModel: LiveViewModel? = null
     private val items = ArrayList<ChatModel>()
@@ -112,8 +113,13 @@ class ChatFragment : Fragment() {
         viewModel?.viewModelScope?.launch {
             chatClient.getUpvoteFlow()
                 .buffer(0, BufferOverflow.DROP_OLDEST)
+                .filter {
+                    delay(200)
+                    it > 0
+                }
+                .flowOn(Dispatchers.IO)
                 .collect {
-                    Log.e("-Chat-", "$it")
+                    flutterView.emit()
                 }
         }
     }
