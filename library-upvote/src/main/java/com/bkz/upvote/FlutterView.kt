@@ -16,8 +16,8 @@ class FlutterView @JvmOverloads constructor(
     attr: AttributeSet? = null,
     defAttr: Int = 0,
 ) : FrameLayout(context, attr, defAttr) {
-    internal var pool: Child? = null
-    internal var poolSize = 0
+    private var pool: Child? = null
+    private var poolSize = 0
     private val images = mutableListOf<Int>()
     private val interpolates = mutableListOf<Interpolator>()
     private var size = 0
@@ -48,7 +48,7 @@ class FlutterView @JvmOverloads constructor(
     }
 
     fun emit() {
-        obtainChild(context).apply {
+        obtain().apply {
             target.setImageResource(images[random.nextInt(images.size)])
             target.layoutParams = params
             addView(target)
@@ -81,8 +81,10 @@ class FlutterView @JvmOverloads constructor(
         val p0 = PointF(x, y)
         val p1 =
             PointF(random.nextInt(mWidth - size).toFloat(), random.nextInt(mHeight / 2).toFloat())
-        val p2 = PointF(random.nextInt(mWidth - size).toFloat(),
-            random.nextInt(mHeight / 2) + mHeight / 2f)
+        val p2 = PointF(
+            random.nextInt(mWidth - size).toFloat(),
+            random.nextInt(mHeight / 2) + mHeight / 2f
+        )
         val p3 = PointF(random.nextInt(mWidth - size).toFloat(), 0f)
         val evaluator = BezierEvaluator(p1, p2)
         val animator = ValueAnimator.ofObject(evaluator, p0, p3)
@@ -96,7 +98,7 @@ class FlutterView @JvmOverloads constructor(
             override fun onAnimationRepeat(animator: Animator) {}
             override fun onAnimationEnd(animator: Animator) {
                 removeView(child.target)
-                recycle(child)
+                child.recycle()
             }
 
             override fun onAnimationCancel(animator: Animator) {}
@@ -107,43 +109,43 @@ class FlutterView @JvmOverloads constructor(
         animator.duration = 2000
         return animator
     }
-}
 
+    private inner class Child(
+        val target: ImageView,
+        var set: AnimatorSet? = null,
+        var next: Child? = null,
+    )
 
-class Child(
-    val target: ImageView,
-    var set: AnimatorSet? = null,
-    var next: Child? = null,
-)
-
-fun FlutterView.obtainChild(context: Context): Child {
-    if (pool != null) {
-        val f: Child = pool!!
-        pool = f.next
-        f.next = null
-        poolSize--
-        return f
+    private inner class BezierEvaluator(private val p1: PointF, private val p2: PointF) :
+        TypeEvaluator<PointF> {
+        override fun evaluate(t: Float, p0: PointF, p3: PointF): PointF {
+            val point = PointF()
+            point.x = (p0.x * (1 - t) * (1 - t) * (1 - t)
+                    + 3 * p1.x * t * (1 - t) * (1 - t)
+                    + 3 * p2.x * t * t * (1 - t)
+                    + p3.x * t * t * t)
+            point.y =
+                p0.y * (1 - t) * (1 - t) * (1 - t) + 3 * p1.y * t * (1 - t) * (1 - t) + 3 * p2.y * t * t * (1 - t) + p3.y * t * t * t
+            return point
+        }
     }
-    return Child(ImageView(context), null, null)
-}
 
-fun FlutterView.recycle(it: Child) {
-    if (poolSize < 20) {
-        it.next = pool
-        pool = it
-        poolSize++
+    private fun obtain(): Child {
+        if (pool != null) {
+            val f: Child = pool!!
+            pool = f.next
+            f.next = null
+            poolSize--
+            return f
+        }
+        return Child(ImageView(context), null, null)
     }
-}
 
-class BezierEvaluator(private val p1: PointF, private val p2: PointF) : TypeEvaluator<PointF> {
-    override fun evaluate(t: Float, p0: PointF, p3: PointF): PointF {
-        val point = PointF()
-        point.x = (p0.x * (1 - t) * (1 - t) * (1 - t)
-                + 3 * p1.x * t * (1 - t) * (1 - t)
-                + 3 * p2.x * t * t * (1 - t)
-                + p3.x * t * t * t)
-        point.y =
-            p0.y * (1 - t) * (1 - t) * (1 - t) + 3 * p1.y * t * (1 - t) * (1 - t) + 3 * p2.y * t * t * (1 - t) + p3.y * t * t * t
-        return point
+    private fun Child.recycle() {
+        if (poolSize < 20) {
+            this.next = pool
+            pool = this
+            poolSize++
+        }
     }
 }
