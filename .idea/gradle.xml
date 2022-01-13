@@ -14,7 +14,9 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/library-arr" />
             <option value="$PROJECT_DIR$/library-chat" />
+            <option value="$PROJECT_DIR$/library-downloader" />
             <option value="$PROJECT_DIR$/library-hw-rtc" />
+            <option value="$PROJECT_DIR$/library-ijkplayer" />
             <option value="$PROJECT_DIR$/library-upvote" />
             <option value="$PROJECT_DIR$/library-video-control" />
           </set>

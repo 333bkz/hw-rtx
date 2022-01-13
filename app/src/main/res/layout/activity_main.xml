@@ -11,4 +11,12 @@
         android:layout_height="50dp"
         android:gravity="center"
         android:text="player" />
+
+    <Button
+        android:id="@+id/playerBtn2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="player2" />
+
 </LinearLayout>

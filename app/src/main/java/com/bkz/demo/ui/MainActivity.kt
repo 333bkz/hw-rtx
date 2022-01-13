@@ -23,6 +23,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.playerBtn).onClick {
             startActivity(Intent(this, PlayerActivity::class.java))
         }
+        findViewById<View>(R.id.playerBtn2).onClick {
+            startActivity(Intent(this, PlayerActivity2::class.java))
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(mPermissions, 0x1234)
         }
