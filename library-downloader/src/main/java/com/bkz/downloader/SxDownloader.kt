@@ -1,8 +1,12 @@
 package com.bkz.downloader
 
+import android.content.Context
+import com.arialyy.aria.core.Aria
 import com.arialyy.aria.core.task.DownloadTask
 
 class SxDownloader : IDownloader {
+
+    var context:Context? = null
 
     private val listener by lazy {
 
@@ -13,6 +17,7 @@ class SxDownloader : IDownloader {
     private val calls = mutableListOf<DownloaderListener>()
 
     override fun start(downloadUrl: String, target: FileInfo) {
+       val entity = Aria.download(this).getFirstDownloadEntity(downloadUrl)
     }
 
     override fun pause(target: FileInfo) {
