@@ -1,8 +1,5 @@
 package com.bkz.hwrtc
 
-import com.huawei.rtc.models.HRTCStatsInfo
-import com.huawei.rtc.utils.HRTCEnums
-
 interface IEventHandler {
 
     /**
@@ -28,7 +25,7 @@ interface IEventHandler {
     /**
      * 自己离开房间
      */
-    fun onLeaveRoom(leaveReason: HRTCEnums.HRTCLeaveReason, statsInfo: HRTCStatsInfo) {}
+    fun onLeaveRoom(reason: String) {}
 
     /**
      * 远端用户加入房间
@@ -49,4 +46,14 @@ interface IEventHandler {
      * 屏幕共享流停止
      */
     fun onScreenShareOffline(userId: String) {}
+
+    /**
+     * 屏幕共享流宽高
+     */
+    fun onScreenSize(w: Int, h: Int) {}
+
+    /**
+     * 远端用户流宽高
+     */
+    fun onUserSize(w: Int, h: Int) {}
 }

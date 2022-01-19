@@ -4,15 +4,14 @@ import android.content.Context
 import com.huawei.rtc.HRTCEngine
 import com.huawei.rtc.models.HRTCEngineConfig
 
-val rtc: HW_RTC by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { HW_RTC() }
+val rtc: HWRTC by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { HWRTC() }
 
-class HW_RTC internal constructor() {
+class HWRTC internal constructor() {
 
-    lateinit var engine: HRTCEngine
-    internal var handler: RTCEngineEventHandler? = null
+    internal lateinit var engine: HRTCEngine
+    internal val handler: RTCEngineEventHandler = RTCEngineEventHandler()
 
     fun init(context: Context, appId: String, domain: String) {
-        handler = RTCEngineEventHandler()
         engine = HRTCEngine.create(HRTCEngineConfig().also {
             it.context = context.applicationContext
             it.appId = appId
@@ -20,7 +19,7 @@ class HW_RTC internal constructor() {
             it.countryCode = ""
             it.isLogEnable = true
             it.logLevel = HRTCEngineConfig.HRTCLogLevel.HRTC_LOG_LEVEL_DEBUG
-            it.logPath = context.externalCacheDir?.absolutePath ?: context.cacheDir.absolutePath
+            it.logPath = context.cacheDir.absolutePath
             it.logSize = 1024 * 10
         }, handler)
     }

@@ -21,6 +21,7 @@ const val url =
 const val url1 = "https://static.sxmaps.com/kdd-file/软件测试/01计算机基础/01课程简介.mp4"
 const val url2 =
     "https://hw-vod.sxmaps.com/asset/81be22d9c1b09c9ad346810f4296c074/video_test/m_61d7de63fa163e19fe301a6dcddf55be_61dbf085d486f77d7563b678/2022-01-10-08-42-36_2022-01-10-08-48-46.m3u8?auth_info=fE%2Fs%2B21TD%2FtGgG932V%2Fl2L8gcJtcgQttg1IHbzkFFFpEjvvJJ8F%2BwDBhT5xxOH%2BSDw%2FKN3RVDxMXL3fONp4QKM2dPlBbCC4QiDjN48Kb32wd%2FlzSZ8bAiYMqkce7QXVZHr7N3SmjzlnEqP9N%2BFsRtiw03JZhL33YIrEWg7to%2BLc%3D.07c4e676e9dbebb2a0957e8887c6aff2"
+const val path = "/data/user/0/com.bkz.demo/cache/video/m3u85分钟视频文件.m3u8"
 
 class PlayerActivity2 : AppCompatActivity(), MediaPlayerObserver {
 
@@ -46,7 +47,7 @@ class PlayerActivity2 : AppCompatActivity(), MediaPlayerObserver {
     }
 
     private fun joinRoom() {
-        mediaPlayer = MediaPlayer(MediaPlayer.AVParameters(url))
+        mediaPlayer = MediaPlayer(MediaPlayer.AVParameters(path))
         mediaDelegate.mediaPlayer = mediaPlayer
         mediaPlayer?.setObserver(this)
         mediaPlayer?.init(this)

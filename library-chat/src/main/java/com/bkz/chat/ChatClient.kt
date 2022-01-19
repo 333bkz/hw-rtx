@@ -1,24 +1,26 @@
 package com.bkz.chat
 
+import android.graphics.PointF
 import kotlinx.coroutines.flow.Flow
 
 interface ChatClient {
-    fun setLiveChatListener(listener: LiveChatListener)
-    fun create(url: String, target: Target)
+    fun setChatListener(listener: LiveChatListener)
+    fun create(url: String, target: ConnectTarget)
     fun connect()
-    fun sendMessage(content: String)
-    fun editRemakeName(content: String)
-    fun queryGuestCount()
-    fun upvote()
+    fun sendMessage(content: String): Int
+    fun editRemakeName(content: String): Int
+    fun upvote(): Int
     fun clear()
 
-    /**
-     * JOIN + EXIT + CHAT + IMAGE
-     */
+    /**消息*/
     fun getChatsFlow(): Flow<List<ChatModel>>
 
-    /**
-     * 点赞
-     */
+    /**在线学员*/
+    fun getUsersFlow(): Flow<List<ChatModel>>
+
+    /**点赞*/
     fun getUpvoteFlow(): Flow<Int>
+
+    /**位置*/
+    fun getMoveFlow(): Flow<PointF>
 }

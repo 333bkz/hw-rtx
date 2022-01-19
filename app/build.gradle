@@ -17,6 +17,15 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file('./shengxue2022.jks')
+            keyAlias 'shengxue2022'
+            storePassword 'shengxue2022'
+            keyPassword 'shengxue2022'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false

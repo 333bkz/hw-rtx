@@ -1,8 +1,8 @@
 package com.bkz.chat
 
+import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
-import com.bkz.chat.MessageType.*
 import com.google.gson.Gson
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
+import com.bkz.chat.MessageType.*
+import com.google.gson.reflect.TypeToken
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ThreadLocalRandom
 
 val chatClient: ChatClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
@@ -20,31 +23,39 @@ val chatClient: ChatClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
 
 private class ChatClientImpl : ChatClient {
     private var socket: Socket? = null
-    private var target: Target? = null
+    private var target: ConnectTarget? = null
     private var listener: LiveChatListener? = null
     private val gson: Gson by lazy { Gson() }
     private val handler = Handler(Looper.getMainLooper())
     private val onConnect = Emitter.Listener { listener?.onSocketStateNotify(true) }
     private val onDisConnect = Emitter.Listener { listener?.onSocketStateNotify(false) }
     private val onMessage = Emitter.Listener {
-        if (!it.isNullOrEmpty()) {
-            it[0].run {
-                if (this is JSONObject) {
-                    onMessage(this)
-                }
+        it?.forEach { msg ->
+            if (msg is JSONObject) {
+                onMessage(msg)
             }
         }
     }
     private var joinCount = 0
-    private val chats = mutableListOf<ChatModel>()
-    private val chatState = MutableStateFlow<List<ChatModel>>(emptyList())
+    private val chats = ConcurrentLinkedDeque<ChatModel>()
     private val upvoteState = MutableStateFlow(0)
+    private val moveState = MutableStateFlow(PointF(0f, 0f))
+    private val chatState = MutableStateFlow<List<ChatModel>>(emptyList())
+    private val userState = MutableStateFlow<List<ChatModel>>(emptyList())
 
-    override fun setLiveChatListener(listener: LiveChatListener) {
+    override fun getChatsFlow(): Flow<List<ChatModel>> = chatState.asStateFlow()
+
+    override fun getUpvoteFlow(): Flow<Int> = upvoteState.asStateFlow()
+
+    override fun getUsersFlow(): Flow<List<ChatModel>> = userState.asStateFlow()
+
+    override fun getMoveFlow(): Flow<PointF> = moveState.asStateFlow()
+
+    override fun setChatListener(listener: LiveChatListener) {
         this.listener = listener
     }
 
-    override fun create(url: String, target: Target) {
+    override fun create(url: String, target: ConnectTarget) {
         this.target = target
         val opts = IO.Options()
         opts.forceNew = true
@@ -73,37 +84,22 @@ private class ChatClientImpl : ChatClient {
         joinCount = 0
         chats.clear()
         chatState.value = emptyList()
+        userState.value = emptyList()
         upvoteState.value = 0
+        moveState.value = PointF()
         handler.removeCallbacksAndMessages(null)
     }
 
-    override fun sendMessage(content: String) {
-        target?.sendCommand(ON_MSG, content)
-    }
+    override fun sendMessage(content: String): Int = target?.sendCommand(ON_MSG, content) ?: 0
 
-    override fun editRemakeName(content: String) {
-        target?.sendCommand(ON_REMARK_NAME, content)
-    }
+    override fun editRemakeName(content: String): Int =
+        target?.sendCommand(ON_REMARK_NAME, content) ?: 0
 
-    override fun upvote() {
-        target?.sendCommand(ON_UPVOTE, "")
-    }
+    override fun upvote(): Int = target?.sendCommand(ON_UPVOTE, "") ?: 0
 
-    override fun queryGuestCount() {
-        target?.sendCommand(ON_GUEST_COUNT)
-    }
-
-    private fun Target.sendCommand(type: MessageType, content: String? = null) {
-        if (socket?.connected() != true) {
-            return
-        }
-        val command: Command? = when (type) {
-            ON_GUEST_COUNT -> Command(
-                messageType = type.command,
-                data = this.also {
-                    it.msgId = null
-                },
-            )
+    private fun ConnectTarget.sendCommand(type: MessageType, content: String? = null): Int {
+        if (socket?.connected() != true) return 0
+        val command: Command = when (type) {
             ON_MSG -> Command(
                 messageType = type.command,
                 data = this.also {
@@ -122,36 +118,44 @@ private class ChatClientImpl : ChatClient {
                     it.remarkName = content
                 },
             )
-            else -> null
+            else -> return 0
         }
-        command?.let {
-            socket?.emit("msgpub", gson.toJson(it))
-        }
+        socket?.emit("msgpub", gson.toJson(command))
+        return 1
     }
 
     private fun onMessage(json: JSONObject) {
         val type = json.optString(MESSAGE_TYPE)
         json.toString().log("-Chat- $type")
         when (type) {
-            ON_GUEST_COUNT.command -> {
-                val count = json.optInt(MESSAGE)
-                if (count != joinCount) {
-                    joinCount = count
-                    execute {
-                        listener?.onGuestCountNotify(joinCount)
-                    }
-                }
-            }
             ON_JOIN_ROOM.command -> {
                 if (json.optString(SEND_TO) == target?.guestId) {
                     target?.guestSession = json.optString(SESSION_TO)
                 }
-                json.chatModel(gson, ChatType.JOIN, SEND_TO).send()
-                queryGuestCount()
+                val model = json.chatModel(gson, ChatType.JOIN, SEND_TO)
+                model.emitChat()
+                execute {
+                    if (joinCount != model.onlineCount) {
+                        joinCount = model.onlineCount
+                        listener?.onGuestCountNotify(joinCount)
+                    }
+                }
             }
             ON_EXIT_ROOM.command -> {
-                json.chatModel(gson, ChatType.EXIT).send()
-                queryGuestCount()
+                val model = json.chatModel(gson, ChatType.EXIT)
+                model.emitChat()
+                execute {
+                    if (joinCount != model.onlineCount) {
+                        joinCount = model.onlineCount
+                        listener?.onGuestCountNotify(joinCount)
+                    }
+                }
+            }
+            ON_GUEST_LIST.command -> {
+                userState.value = gson. fromJson(json.optString(MESSAGE), object : TypeToken<List<ChatModel>>() {}.type)
+            }
+            ON_MOVE_PLAYER.command -> {
+                moveState.value = gson.fromJson(json.optString(MESSAGE), PointF::class.java)
             }
             ON_FORBID_CHAT.command -> execute {
                 listener?.onForbidChatNotify(true)
@@ -163,21 +167,19 @@ private class ChatClientImpl : ChatClient {
                 listener?.onKickOutNotify()
             }
             ON_MSG.command -> {
-                json.chatModel(gson, ChatType.CHAT).send()
+                json.chatModel(gson, ChatType.CHAT).emitChat()
             }
             ON_ASSISTANT_IMG.command -> {
-                json.chatModel(gson, ChatType.IMAGE).send()
+                json.chatModel(gson, ChatType.IMAGE).emitChat()
             }
-            ON_ANNOUNCEMENT.command -> {
-                val model = json.chatModel(gson, ChatType.ANNOUNCEMENT)
+            ON_ANNOUNCEMENT.command -> { //公告修改
                 execute {
-                    listener?.onAnnouncementNotify(model)
+                    listener?.onAnnouncementNotify(json.chatModel(gson, ChatType.ANNOUNCEMENT))
                 }
             }
-            ON_TOP_IMG.command -> {
-                val model = json.chatModel(gson, ChatType.TOP_IMAGE)
+            ON_TOP_IMG.command -> { //置顶图片修改
                 execute {
-                    listener?.onAnnouncementNotify(model)
+                    listener?.onTopInfoNotify(json.chatModel(gson, ChatType.TOP_IMAGE))
                 }
             }
             ON_UPVOTE.command -> {
@@ -197,17 +199,13 @@ private class ChatClientImpl : ChatClient {
         handler.post { it.invoke() }
     }
 
-    private fun ChatModel.send() {
+    private fun ChatModel.emitChat() {
         synchronized(chats) {
             chats.add(this)
-            if (chats.size > 200) {
-                chats.removeAt(0)
+            if (200 < chats.size) {
+                chats.removeFirst()
             }
             chatState.value = ArrayList(chats)
         }
     }
-
-    override fun getChatsFlow(): Flow<List<ChatModel>> = chatState.asStateFlow()
-
-    override fun getUpvoteFlow(): Flow<Int> = upvoteState.asStateFlow()
 }

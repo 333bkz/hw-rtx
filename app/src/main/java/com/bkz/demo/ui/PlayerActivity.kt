@@ -23,7 +23,7 @@ import com.bkz.demo.vm.LiveViewModel
 import com.bkz.hwrtc.*
 import kotlinx.android.synthetic.main.activity_player.*
 
-val target = Target("61d5632dc373ac6b56c61792", "11111", "xxxx", "")
+val target = ConnectTarget("61d5632dc373ac6b56c61792", "11111", "xxxx", "")
 
 class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
@@ -65,7 +65,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         registerEventHandler()
         viewModel = ViewModelProvider(this).get(LiveViewModel::class.java)
         chatClient.apply {
-            setLiveChatListener(this@PlayerActivity)
+            setChatListener(this@PlayerActivity)
             create(Constants.url, target)
             connect()
         }
@@ -117,7 +117,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onUserOnline(userId: String) {
         runOnUiThread {
-            rtc.engine.online(this, userId).also {
+            rtc.online(this, userId).also {
                 userSurfaceView = it
                 onSwitchPosition(mediaController?.isDragUser == true)
             }
@@ -126,7 +126,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onUserOffline(userId: String, reason: Int) {
         runOnUiThread {
-            rtc.engine.offline(userId)
+            rtc.offline(userId)
             userSurfaceView?.let {
                 dragContainer.removeView(it)
                 screenContainer.removeView(it)
@@ -137,7 +137,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onScreenShareOnline(userId: String) {
         runOnUiThread {
-            rtc.engine.screenShareOnline(this, userId).also {
+            rtc.screenShareOnline(this, userId).also {
                 screenShareSurfaceView = it
                 onSwitchPosition(mediaController?.isDragUser == true)
             }
@@ -146,7 +146,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
 
     override fun onScreenShareOffline(userId: String) {
         runOnUiThread {
-            rtc.engine.screenShareOffline(userId)
+            rtc.screenShareOffline(userId)
             screenShareSurfaceView?.let {
                 dragContainer.removeView(it)
                 screenContainer.removeView(it)
@@ -193,13 +193,13 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
     }
 
     private fun leaveRoom() {
-        rtc.engine.leaveRoom()
+        rtc.leaveRoom()
     }
 
     override fun onLiveStateNotify(isActive: Boolean) {
         if (isActive) {
             mediaController?.isLoading = true
-            rtc.engine.joinRoom(
+            rtc.joinRoom(
                 target.roomNumber,
                 Constants.appId,
                 Constants.key,
@@ -212,8 +212,12 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         }
     }
 
-    override fun onAnnouncementNotify(model: ChatModel) {
-        viewModel?.announcement?.value = model
+    override fun onAnnouncementNotify(chat: ChatModel) {
+        viewModel?.announcement?.value = chat
+    }
+
+    override fun onTopInfoNotify(chat: ChatModel) {
+
     }
 
     override fun onGuestCountNotify(count: Int) {
@@ -223,6 +227,7 @@ class PlayerActivity : AppCompatActivity(), IEventHandler, LiveChatListener {
         leaveRoom()
         chatClient.clear()
         Toast.makeText(this, "您已经被踢出", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

@@ -8,7 +8,7 @@ internal fun String.log(tag: String = "-Chat-") {
     Log.i(tag, this)
 }
 
-internal fun Target.toQuery(): String {
+internal fun ConnectTarget.toQuery(): String {
     return "guestId=$guestId" +
             "&nickName=$nickName" +
             "&cellphone=$cellphone" +
@@ -26,7 +26,7 @@ internal fun JSONObject.chatModel(
             gson.fromJson(optString(MESSAGE), ChatModel::class.java).also {
                 it.type = type
                 it.guestId = optString(guestIdNode)
-                it.createTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
+                it.msgTime = optJSONObject(CREATE_TIME)?.getInt(EPOCH_SECOND)
                 it.fromType = optInt(FROM_FLAG, 0)
                 when (type) {
                     ChatType.IMAGE -> {
@@ -44,12 +44,12 @@ internal fun JSONObject.chatModel(
         ChatType.ANNOUNCEMENT -> ChatModel(
             type = type,
             content = optString(MESSAGE),
-            userJoinNum = optInt(USER_JOIN_NUM).run { if (this == 0) null else this }
+            userJoinNum = optInt(USER_JOIN_NUM)
         )
     }
 }
 
-internal fun String.removePrefix(target: String): String {
+private fun String.removePrefix(target: String): String {
     return if (startsWith(target)) {
         substring(target.length).removePrefix(target)
     } else {
@@ -57,7 +57,7 @@ internal fun String.removePrefix(target: String): String {
     }
 }
 
-internal fun String.removeSuffix(target: String): String {
+private fun String.removeSuffix(target: String): String {
     return if (endsWith(target)) {
         substring(0, length - target.length).removeSuffix(target)
     } else {

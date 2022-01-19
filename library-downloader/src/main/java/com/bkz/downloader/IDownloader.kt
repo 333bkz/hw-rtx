@@ -39,8 +39,8 @@ interface IDownloader {
     fun start(downloadUrl: String, target: FileInfo)
     fun pause(target: FileInfo)
     fun cancel(target: FileInfo)
-    fun delete(target: FileInfo)
-    fun cancelAll()
+    fun delete(target: FileInfo){}
+    fun cancelAll(){}
     fun registerProgressListener(listener: DownloaderListener)
     fun removeProgressListener(listener: DownloaderListener)
 }

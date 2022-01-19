@@ -13,11 +13,14 @@ interface LiveChatListener {
     /**被踢*/
     fun onKickOutNotify() {}
 
-    /**观看人数*/
+    /**真实观看人数*/
     fun onGuestCountNotify(count: Int) {}
 
-    /**公告*/
-    fun onAnnouncementNotify(model: ChatModel) {}
+    /**置顶信息*/
+    fun onTopInfoNotify(chat: ChatModel) {}
+
+    /**公告 + 额外观看人数*/
+    fun onAnnouncementNotify(chat: ChatModel) {}
 }
 
 data class ChatModel(
@@ -26,7 +29,7 @@ data class ChatModel(
     /**用户ID*/
     var guestId: String? = null,
     /**创建时间*/
-    var createTime: Int? = null,
+    var msgTime: Int? = null,
     /**CHAT=消息内容 ｜ IMAGE=图片 ｜ JOIN=用户进入消息 ｜ ANNOUNCEMENT=公告*/
     var content: String? = null,
     /**TOP_IMAGE=置顶图片*/
@@ -37,13 +40,15 @@ data class ChatModel(
     var nickName: String? = null,
     /**备注*/
     var remarkName: String? = null,
-    /**老师*/
+    /**老师 1是老师，2是助教， 0学员*/
     var fromType: Int = 0,
     /**ANNOUNCEMENT=用户数量*/
-    var userJoinNum: Int? = null,
+    var userJoinNum: Int = 0,
+    /**ON_JOIN_ROOM,ON_EXIT_ROOM=用户真实数量*/
+    var onlineCount: Int = 0,
 )
 
-data class Target(
+data class ConnectTarget(
     val roomNumber: String,
     val guestId: String,
     val nickName: String,
@@ -57,6 +62,6 @@ data class Target(
 
 internal data class Command(
     val messageType: String,
-    val data: Target,
+    val data: ConnectTarget,
     val message: String? = null,
 )
